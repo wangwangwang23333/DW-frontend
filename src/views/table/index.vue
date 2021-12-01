@@ -1,25 +1,32 @@
 
 <template>
   <div class="app-container">
-    <el-row>
+    <el-row >
       <el-col :span="14">
         <el-form ref="form" :model="form" label-width="120px">
           <el-form-item label="电影名称">
             <el-input v-model="form.name" />
           </el-form-item>
     
-          <el-form-item label="电影类别">
-            <el-select v-model="form.region" placeholder="please select your zone">
-              <el-option label="Zone one" value="shanghai" />
-              <el-option label="Zone two" value="beijing" />
-            </el-select>
-          </el-form-item>
-          <el-form-item label="上映时间">
-            <el-date-picker v-model="form.movieDate" type="daterange" align="right" unlink-panels range-separator="至"
-                start-placeholder="开始日期" end-placeholder="结束日期" 
-                :picker-options="pickerOptions">
-              </el-date-picker>
-          </el-form-item>
+          <el-row >
+            <el-col :span="10">
+              <el-form-item label="电影类别">
+                <el-select v-model="form.region" placeholder="please select your zone">
+                  <el-option label="Zone one" value="shanghai" />
+                  <el-option label="Zone two" value="beijing" />
+                </el-select>
+              </el-form-item>
+            </el-col>
+            <el-col :span="14">
+              <el-form-item label="上映时间">
+                <el-date-picker v-model="form.movieDate" type="daterange" align="right" unlink-panels range-separator="至"
+                    start-placeholder="开始日期" end-placeholder="结束日期" 
+                    :picker-options="pickerOptions"
+                    style="width: 80%;">
+                  </el-date-picker>
+              </el-form-item>
+            </el-col>
+          </el-row>
           <el-form-item label="导演">
             <el-tag
               :key="tag"
@@ -116,8 +123,9 @@
           </el-form-item>
         </el-form>
       </el-col>
+      <el-divider direction="vertical" style="height: 100vh;"></el-divider>
       <el-col :span="10">
-        测试
+        
       </el-col>
     </el-row>
   </div>
@@ -148,6 +156,9 @@ export default {
       },
       labelColor:["#77C9D4","#57BC90","#015249"],
       pickerOptions: {
+          disabledDate(time) {
+            return time.getTime() > Date.now();
+          },
           shortcuts: [{
             text: '最近一周',
             onClick(picker) {
