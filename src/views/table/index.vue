@@ -1,7 +1,6 @@
 
 <template>
   <div class="app-container">
-    数据获取
     <el-row>
       <el-col :span="14">
         <el-form ref="form" :model="form" label-width="120px">
@@ -24,9 +23,13 @@
           <el-form-item label="导演">
             <el-tag
               :key="tag"
-              v-for="tag in form.movieDirectors"
+              v-for="(tag,index) in form.movieDirectors"
               closable
+              effect="dark"
               :disable-transitions="false"
+              :color="labelColor[index%labelColor.length]"
+              style="color: white;"
+              :hit="true"
               @close="handleDirectorTagClose(tag)">
               {{tag}}
             </el-tag>
@@ -45,9 +48,35 @@
                 添加导演
               </el-button>
           </el-form-item>
-          <el-form-item label="演员">
-            <el-input v-model="form.actorName" />
+          <el-form-item label="主演">
+            <el-tag
+              :key="tag"
+              v-for="(tag,index) in form.movieMainActors"
+              closable
+              effect="dark"
+              :disable-transitions="false"
+              :color="labelColor[index%labelColor.length]"
+              style="color: white;"
+              :hit="true"
+              @close="handleMainActorTagClose(tag)">
+              {{tag}}
+            </el-tag>
+            <el-input
+                class="input-new-tag"
+                v-if="mainActorInputVisible"
+                v-model="mainActorInputValue"
+                ref="saveMainActorTagInput"
+                size="small"
+                @keyup.enter.native="handleMainActorInputConfirm"
+                @blur="handleMainActorInputConfirm"
+              >
+              </el-input>
+              <el-button v-if="!mainActorInputVisible && form.movieMainActors.length<5" class="button-new-tag" size="small" 
+              @click="showMainActorInput()">
+                添加主演
+              </el-button>
           </el-form-item>
+          
           <el-form-item label="评分">
             <el-input-number v-model="form.movieMinScore" :precision="2" :step="0.01" :max="form.movieMaxScore" :min="0" />
             <el-input-number v-model="form.movieMaxScore" :precision="2" :step="0.01" :max="5" :min="form.movieMinScore" />
@@ -76,18 +105,19 @@ export default {
       form: {
         name: '',
         region: '',
-        date1: '',
-        date2: '',
         delivery: false,
         type: [],
         resource: '',
         desc: '',
         movieDirectors:[],
+        movieMainActors:[],
+        movieActors:[],
         actorName:'',
         movieMinScore:2.7,
         movieMaxScore:5.0,
         movieDate:'',
       },
+      labelColor:["#77C9D4","#57BC90","#015249"],
       pickerOptions: {
           shortcuts: [{
             text: '最近一周',
@@ -135,6 +165,8 @@ export default {
       },
       directorInputVisible:false,
       directorInputValue:'',
+      mainActorInputVisible:false,
+      mainActorInputValue:'',
       
       }
   },
@@ -149,33 +181,57 @@ export default {
       })
     },
     showDirectorInput() {
-      console.log("成功")
-        this.directorInputVisible = true;
-        this.$nextTick(_ => {
-          this.$refs.saveDirectorTagInput.$refs.input.focus();
-        });
-      },
-      handleDirectorInputConfirm() {
-        let inputValue = this.directorInputValue
-        // 有效性判断
-        if (!inputValue || inputValue.replace(/\s*/g,"").length==0) {
-          if(!this.directorInputVisible){
-            return;
-          }
-          this.$message({
-            message: '请输入有效的导演名称！',
-            type: 'warning'
-          })
+      this.directorInputVisible = true;
+      this.$nextTick(_ => {
+        this.$refs.saveDirectorTagInput.$refs.input.focus();
+      });
+    },
+    handleDirectorInputConfirm() {
+      let inputValue = this.directorInputValue
+      // 有效性判断
+      if (!inputValue || inputValue.replace(/\s*/g,"").length==0) {
+        if(!this.directorInputVisible){
           return;
         }
-        this.form.movieDirectors.push(inputValue.replace(/^\s*|\s*$/g,""));
-        this.directorInputVisible = false;
-        this.directorInputValue = '';
-      },
-      handleDirectorTagClose(tag) {
-        this.form.movieDirectors.splice(this.form.movieDirectors.indexOf(tag), 1);
-      },
-
+        this.$message({
+          message: '请输入有效的导演名称！',
+          type: 'warning'
+        })
+        return;
+      }
+      this.form.movieDirectors.push(inputValue.replace(/^\s*|\s*$/g,""));
+      this.directorInputVisible = false;
+      this.directorInputValue = '';
+    },
+    handleDirectorTagClose(tag) {
+      this.form.movieDirectors.splice(this.form.movieDirectors.indexOf(tag), 1);
+    },
+    showMainActorInput() {
+      this.mainActorInputVisible = true;
+      this.$nextTick(_ => {
+        this.$refs.saveMainActorTagInput.$refs.input.focus();
+      });
+    },
+    handleMainActorInputConfirm() {
+      let inputValue = this.mainActorInputValue
+      // 有效性判断
+      if (!inputValue || inputValue.replace(/\s*/g,"").length==0) {
+        if(!this.mainActorInputVisible){
+          return;
+        }
+        this.$message({
+          message: '请输入有效的主演名称！',
+          type: 'warning'
+        })
+        return;
+      }
+      this.form.movieMainActors.push(inputValue.replace(/^\s*|\s*$/g,""));
+      this.mainActorInputVisible = false;
+      this.mainActorInputValue = '';
+    },
+    handleMainActorTagClose(tag) {
+      this.form.movieMainActors.splice(this.form.movieMainActors.indexOf(tag), 1);
+    },
   }
 }
 </script>
