@@ -76,6 +76,35 @@
                 添加主演
               </el-button>
           </el-form-item>
+
+          <el-form-item label="演员">
+            <el-tag
+              :key="tag"
+              v-for="(tag,index) in form.movieActors"
+              closable
+              effect="dark"
+              :disable-transitions="false"
+              :color="labelColor[index%labelColor.length]"
+              style="color: white;"
+              :hit="true"
+              @close="handleActorTagClose(tag)">
+              {{tag}}
+            </el-tag>
+            <el-input
+                class="input-new-tag"
+                v-if="actorInputVisible"
+                v-model="actorInputValue"
+                ref="saveActorTagInput"
+                size="small"
+                @keyup.enter.native="handleActorInputConfirm"
+                @blur="handleActorInputConfirm"
+              >
+              </el-input>
+              <el-button v-if="!actorInputVisible && form.movieActors.length<5" class="button-new-tag" size="small" 
+              @click="showActorInput()">
+                添加演员
+              </el-button>
+          </el-form-item>
           
           <el-form-item label="评分">
             <el-input-number v-model="form.movieMinScore" :precision="2" :step="0.01" :max="form.movieMaxScore" :min="0" />
@@ -167,7 +196,8 @@ export default {
       directorInputValue:'',
       mainActorInputVisible:false,
       mainActorInputValue:'',
-      
+      actorInputVisible:false,
+      actorInputValue:'',
       }
   },
   created() {
@@ -180,6 +210,10 @@ export default {
         type: 'warning'
       })
     },
+
+    /**
+     * 下面是处理标签的函数 
+     **/
     showDirectorInput() {
       this.directorInputVisible = true;
       this.$nextTick(_ => {
@@ -231,6 +265,33 @@ export default {
     },
     handleMainActorTagClose(tag) {
       this.form.movieMainActors.splice(this.form.movieMainActors.indexOf(tag), 1);
+    },
+
+    showActorInput() {
+      this.actorInputVisible = true;
+      this.$nextTick(_ => {
+        this.$refs.saveActorTagInput.$refs.input.focus();
+      });
+    },
+    handleActorInputConfirm() {
+      let inputValue = this.actorInputValue
+      // 有效性判断
+      if (!inputValue || inputValue.replace(/\s*/g,"").length==0) {
+        if(!this.actorInputVisible){
+          return;
+        }
+        this.$message({
+          message: '请输入有效的演员名称！',
+          type: 'warning'
+        })
+        return;
+      }
+      this.form.movieActors.push(inputValue.replace(/^\s*|\s*$/g,""));
+      this.actorInputVisible = false;
+      this.actorInputValue = '';
+    },
+    handleActorTagClose(tag) {
+      this.form.movieActors.splice(this.form.movieActors.indexOf(tag), 1);
     },
   }
 }
