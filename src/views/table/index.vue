@@ -123,7 +123,7 @@
           </el-form-item>
         </el-form>
       </el-col>
-      <el-divider direction="vertical" style="height: 100vh;"></el-divider>
+      <el-divider direction="vertical"></el-divider>
       <el-col :span="10">
         
       </el-col>
@@ -323,5 +323,8 @@ export default {
     width: 90px;
     margin-left: 10px;
     vertical-align: bottom;
+  }
+  .el-divider--vertical{
+    height:80vh;
   }
 </style>
