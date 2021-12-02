@@ -2,7 +2,7 @@
 <template>
   <div class="app-container">
     <el-row >
-      <el-col :span="14">
+      <el-col :span="12">
         <el-form ref="form" :model="form" label-width="120px">
           <el-form-item label="电影名称">
             <el-input v-model="form.name" />
@@ -123,9 +123,21 @@
           </el-form-item>
         </el-form>
       </el-col>
-      <el-divider direction="vertical"></el-divider>
-      <el-col :span="10">
-        
+      <el-col :span="1">
+        <el-divider direction="vertical"></el-divider>
+      </el-col>
+      <el-col :span="8">
+        <el-tabs v-model="activeName" @tab-click="handleClick">
+          <el-tab-pane label="查询结果" name="first">
+            用户管理
+          </el-tab-pane>
+          <el-tab-pane label="数据血缘" name="second">
+            配置管理
+          </el-tab-pane>
+          <el-tab-pane label="速度比较" name="third">
+            配置管理
+          </el-tab-pane>
+       </el-tabs>
       </el-col>
     </el-row>
   </div>
@@ -209,6 +221,7 @@ export default {
       mainActorInputValue:'',
       actorInputVisible:false,
       actorInputValue:'',
+      activeName: 'second',
       }
   },
   created() {
@@ -220,6 +233,9 @@ export default {
         message: 'cancel!',
         type: 'warning'
       })
+    },
+    handleClick(tab, event) {
+      console.log(tab, event);
     },
 
     /**
