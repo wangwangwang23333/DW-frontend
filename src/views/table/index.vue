@@ -11,7 +11,7 @@
           <el-row >
             <el-col :span="10">
               <el-form-item label="电影类别">
-                <el-select v-model="form.region" placeholder="please select your zone">
+                <el-select v-model="form.category" placeholder="please select your zone">
                   <el-option label="Zone one" value="shanghai" />
                   <el-option label="Zone two" value="beijing" />
                 </el-select>
@@ -169,13 +169,14 @@ export default {
         type: [],
         resource: '',
         desc: '',
+        category:'',
         movieDirectors:[],
         movieMainActors:[],
         movieActors:[],
         actorName:'',
-        movieMinScore:2.7,
+        movieMinScore:0,
         movieMaxScore:5.0,
-        movieDate:'',
+        movieDate:[],
       },
       labelColor:["#77C9D4","#57BC90","#015249"],
       pickerOptions: {
@@ -341,9 +342,9 @@ export default {
             // 设置柱子的样式
             v.forEach(i => {
               console.log("series", i);
-              i.barWidth = 20;
+              i.barWidth = 30;
               i.itemStyle={
-                barBorderRadius:[10,10,10,10],
+                barBorderRadius:[15,15,0,0],
                 borderWidth:20,
               };
               i.label={
@@ -375,6 +376,7 @@ export default {
       actorInputVisible:false,
       actorInputValue:'',
       activeName: 'second',
+      searchText:'',
       }
   },
   created() {
@@ -391,7 +393,97 @@ export default {
       console.log(tab, event);
     },
     searchMovie(){
-      this.vchartsConfig.extend.title.subtext="查找电影"
+      Date.prototype.format = function(format)
+        {
+        var o = {
+        "M+" : this.getMonth()+1, //month
+        "d+" : this.getDate(),    //day
+        "h+" : this.getHours(),   //hour
+        "m+" : this.getMinutes(), //minute
+        "s+" : this.getSeconds(), //second
+        "q+" : Math.floor((this.getMonth()+3)/3),  //quarter
+        "S" : this.getMilliseconds() //millisecond
+        }
+        if(/(y+)/.test(format)) format=format.replace(RegExp.$1,
+        (this.getFullYear()+"").substr(4 - RegExp.$1.length));
+        for(var k in o)if(new RegExp("("+ k +")").test(format))
+        format = format.replace(RegExp.$1,
+        RegExp.$1.length==1 ? o[k] :
+        ("00"+ o[k]).substr((""+ o[k]).length));
+        return format;
+        }
+      var searchText="查找"
+      var searchCondition={
+
+      }
+      if (this.form.name!=""){
+        searchText+=" 电影名为"+this.form.name+""
+        searchCondition.title=this.form.name
+      }
+      if(this.form.movieDate.length!=0){
+        searchCondition.minYear=this.form.movieDate[0].format("yyyy")
+        searchCondition.minMonth=this.form.movieDate[0].format("MM")
+        searchCondition.minDay=this.form.movieDate[0].format("dd")
+        searchCondition.maxYear=this.form.movieDate[1].format("yyyy")
+        searchCondition.maxMonth=this.form.movieDate[1].format("MM")
+        searchCondition.maxDay=this.form.movieDate[1].format("dd")
+        searchText+=" 上映时间在"+searchCondition.minYear+"年"
+                    +searchCondition.minMonth+"月"+searchCondition.minDay+"日"
+                    +"到"+searchCondition.maxYear+"年"
+                    +searchCondition.maxMonth+"月"+searchCondition.maxDay+"日之间"
+      }
+      if (this.form.category != ""){
+        searchText+=" 类别为"+this.form.category+""
+        searchCondition.category=this.form.category
+      }
+      if (this.form.movieDirectors.length!=0){
+        searchText+=" 导演有"
+        for(let i=0;i<this.form.movieDirectors.length;++i){
+          if (i!=0){
+            searchText+=", "
+          }
+          searchText+=this.form.movieDirectors[i]
+        }
+        searchCondition.directors=this.form.movieDirectors
+      }
+      if (this.form.movieMainActors.length!=0){
+        searchText+=" 主演有"
+        for(let i=0;i<this.form.movieMainActors.length;++i){
+          if (i!=0){
+            searchText+=", "
+          }
+          searchText+=this.form.movieMainActors[i]
+        }
+        searchCondition.mainActors=this.form.movieMainActors
+      }
+      if (this.form.movieActors.length!=0){
+        searchText+=" 演员有"
+        for(let i=0;i<this.form.movieActors.length;++i){
+          if (i!=0){
+            searchText+=", "
+          }
+          searchText+=this.form.movieActors[i]
+        }
+        searchCondition.actors=this.form.movieActors
+      }
+
+      if(this.form.movieMinScore!=0 || this.form.movieMaxScore!=5){
+        searchCondition.minScore=this.form.movieMinScore
+        searchCondition.maxScore=this.form.movieMaxScore
+        searchText+=" 评分在"+searchCondition.minScore+"到"+searchCondition.maxScore+"之间"
+      }
+
+      console.log()
+      if(Object.keys(searchCondition).length==0){
+        this.$message({
+          message: '请至少给出一个条件！',
+          type: 'warning'
+        })
+        return
+      }
+      searchText+=" 的电影"
+
+      this.vchartsConfig.extend.title.subtext=searchText
     },
 
     /**
