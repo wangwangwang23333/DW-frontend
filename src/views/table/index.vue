@@ -3,15 +3,15 @@
   <div class="app-container">
     <el-row >
       <el-col :span="12">
-        <el-form ref="form" :model="form" label-width="120px">
-          <el-form-item label="电影名称">
+        <el-form ref="form" :model="form" label-width="120px" style="padding-top: 10vh;">
+          <el-form-item label="电影名称" style="width: 90%;">
             <el-input v-model="form.name" />
           </el-form-item>
     
           <el-row >
             <el-col :span="10">
               <el-form-item label="电影类别">
-                <el-select v-model="form.category" placeholder="please select your zone">
+                <el-select v-model="form.category" placeholder="请选择电影类别">
                   <el-option label="Zone one" value="shanghai" />
                   <el-option label="Zone two" value="beijing" />
                 </el-select>
@@ -114,12 +114,18 @@
           </el-form-item>
           
           <el-form-item label="评分">
-            <el-input-number v-model="form.movieMinScore" :precision="2" :step="0.01" :max="form.movieMaxScore" :min="0" />
-            <el-input-number v-model="form.movieMaxScore" :precision="2" :step="0.01" :max="5" :min="form.movieMinScore" />
+            <el-input-number 
+            size="mini"
+            v-model="form.movieMinScore" :precision="2" :step="0.01" :max="form.movieMaxScore" :min="0" />
+             至 
+            <el-input-number 
+            size="mini"
+            v-model="form.movieMaxScore" :precision="2" :step="0.01" :max="5" :min="form.movieMinScore" />
           </el-form-item>
+          
           <el-form-item>
-            <el-button type="primary" @click="searchMovie">Create</el-button>
-            <el-button @click="onCancel">Cancel</el-button>
+            <el-button type="primary" @click="searchMovie">查询</el-button>
+            <el-button @click="onCancel">取消</el-button>
           </el-form-item>
         </el-form>
       </el-col>
@@ -135,7 +141,7 @@
           <el-tab-pane label="数据血缘" name="second">
             配置管理
           </el-tab-pane>
-          <el-tab-pane label="速度对比" name="third">
+          <el-tab-pane label="速度对比" name="third" :disabled="!hasResult">
 
             <ve-histogram
               class="myve"
@@ -150,6 +156,25 @@
        
       </el-col>
     </el-row>
+    <el-divider></el-divider>
+    <el-row >
+      <el-col :span="12" >
+        <p style="margin-left: 3vw;color: #909399;font-size:8rew;font-weight: revert;">
+          {{searchText}}
+        </p>
+      </el-col>
+      
+      <el-col :span="5" style="text-align: center;">
+        <el-button :disabled="!hasResult">
+          导出csv
+        </el-button>
+      </el-col>
+      <el-col :span="5" style="text-align: center;">
+        <el-button >
+          范例测试
+        </el-button>
+      </el-col>
+    </el-row>
   </div>
 </template>
 
@@ -162,6 +187,7 @@ export default {
   },
   data() {
     return {
+      hasResult:false,
       form: {
         name: '',
         region: '',
@@ -242,7 +268,7 @@ export default {
           title:{
             show:true,
             text:'检索电影',
-            subtext:'查找电影名为[HarryPotter]的所有电影',
+            subtext:'通过关系型数据库MySql、分布式数据库Hive和图数据库Neo4j分别检索电影的速度对比',
             // textAlign:'center',
           },
           // 图标顶部的标题及按钮
@@ -363,9 +389,9 @@ export default {
       chartData: {
         columns: ["type","speed"],
         rows: [
-          { "type":"关系型数据库","software": "mysql", "speed": 570 },
-          { "type":"分布式数据库","software": "hive", "speed": 800 },
-          { "type":"图数据库","software": "neo4j", "speed": 1540 },
+          { "type":"关系型数据库","software": "mysql", "speed": 0 },
+          { "type":"分布式数据库","software": "hive", "speed": 0 },
+          { "type":"图数据库","software": "neo4j", "speed": 0 },
         ],
       },
       
@@ -375,8 +401,8 @@ export default {
       mainActorInputValue:'',
       actorInputVisible:false,
       actorInputValue:'',
-      activeName: 'second',
-      searchText:'',
+      activeName: 'first',
+      searchText:'暂无查询',
       }
   },
   created() {
@@ -482,6 +508,8 @@ export default {
         return
       }
       searchText+=" 的电影"
+
+      this.searchText=searchText
 
       this.vchartsConfig.extend.title.subtext=searchText
     },
@@ -592,6 +620,6 @@ export default {
     vertical-align: bottom;
   }
   .el-divider--vertical{
-    height:80vh;
+    height:75vh;
   }
 </style>
