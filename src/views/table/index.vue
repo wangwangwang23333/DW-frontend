@@ -170,7 +170,7 @@
         </el-button>
       </el-col>
       <el-col :span="5" style="text-align: center;">
-        <el-button >
+        <el-button  type="primary" plain>
           范例测试
         </el-button>
       </el-col>
