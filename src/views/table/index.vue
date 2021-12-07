@@ -148,7 +148,7 @@
               :data="chartData"
               :settings="vchartsConfig.setting"
               :extend="vchartsConfig.extend"
-              width="40vw"
+              width="38vw"
             ></ve-histogram>  
           </el-tab-pane>
        </el-tabs>
@@ -403,6 +403,7 @@ export default {
       actorInputValue:'',
       activeName: 'first',
       searchText:'暂无查询',
+      BASE_URL:'http://localhost:8101',
       }
   },
   created() {
@@ -444,7 +445,7 @@ export default {
       }
       if (this.form.name!=""){
         searchText+=" 电影名为"+this.form.name+""
-        searchCondition.title=this.form.name
+        searchCondition.movieName=this.form.name
       }
       if(this.form.movieDate.length!=0){
         searchCondition.minYear=this.form.movieDate[0].format("yyyy")
@@ -470,7 +471,7 @@ export default {
           }
           searchText+=this.form.movieDirectors[i]
         }
-        searchCondition.directors=this.form.movieDirectors
+        searchCondition.directorNames=this.form.movieDirectors
       }
       if (this.form.movieMainActors.length!=0){
         searchText+=" 主演有"
@@ -499,7 +500,7 @@ export default {
         searchText+=" 评分在"+searchCondition.minScore+"到"+searchCondition.maxScore+"之间"
       }
 
-      console.log()
+   
       if(Object.keys(searchCondition).length==0){
         this.$message({
           message: '请至少给出一个条件！',
@@ -508,10 +509,33 @@ export default {
         return
       }
       searchText+=" 的电影"
-
       this.searchText=searchText
-
       this.vchartsConfig.extend.title.subtext=searchText
+
+      // 设置参数
+      console.log("搜索条件为",searchCondition)
+
+      // 发送api
+      var axios = require('axios');
+
+      var config = {
+        method: 'get',
+        url: this.BASE_URL+'/neo4j/movie',
+        params:searchCondition,
+        headers: { }
+      };
+
+      // 向neo4j 发送请求
+      axios(config)
+      .then(response=> {
+        this.chartData.rows[2].speed=response.data.time
+      })
+      .catch(function (error) {
+        this.$message.error('当前网络异常，请稍后再试');
+      });
+
+      this.hasResult = true;
+
     },
 
     /**
