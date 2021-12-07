@@ -654,13 +654,16 @@ export default {
       // 设置参数
       console.log("搜索条件为",searchCondition)
 
+      // 清空上一轮查询结果
+      this.clearResult();
+
       // 发送api
       var axios = require('axios');
 
       var config = {
-        method: 'get',
+        method: 'post',
         url: this.BASE_URL+'/neo4j/movie',
-        params:searchCondition,
+        data:searchCondition,
         headers: { }
       };
 
@@ -676,6 +679,13 @@ export default {
 
       this.hasResult = true;
 
+    },
+
+    clearResult(){
+      for(let i=0;i<3;++i){
+        this.chartData.rows[i].speed=0
+      }
+      
     },
 
     /**
