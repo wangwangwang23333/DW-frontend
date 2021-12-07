@@ -4,8 +4,15 @@
     <el-row >
       <el-col :span="12">
         <el-form ref="form" :model="form" label-width="120px" style="padding-top: 10vh;">
-          <el-form-item label="电影名称" style="width: 90%;">
-            <el-input v-model="form.name" />
+          <el-form-item label="电影名称" style="width: 100%;">
+            <el-autocomplete
+              v-model="form.name"
+              :fetch-suggestions="movieSearchSuggest"
+              placeholder="请输入内容"
+              @select="handleSelect"
+              style="width: 20vw;"
+            ></el-autocomplete>
+            
           </el-form-item>
     
           <el-row >
@@ -415,6 +422,34 @@ export default {
         message: 'cancel!',
         type: 'warning'
       })
+    },
+    handleSelect(item) {
+      console.log(item);
+    },
+    movieSearchSuggest(queryString, cb){
+      console.log("queryString为：",queryString)
+      var axios = require('axios');
+
+      var config = {
+        method: 'get',
+        url: this.BASE_URL+'/mysql/association/movie',
+        params:{"movieName":queryString},
+        headers: { }
+      };
+
+      // 向mysql 发送请求
+      axios(config)
+      .then(response=> {
+        console.log(response.data)
+        var result=[]
+        for(let i=0;i<response.data.length;++i){
+          result.push({"value":response.data[i]})
+        }
+        cb(result);
+      })
+      .catch(function (error) {
+        this.$message.error('当前网络异常，请稍后再试');
+      });
     },
     handleClick(tab, event) {
       console.log(tab, event);
