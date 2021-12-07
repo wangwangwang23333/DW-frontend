@@ -4,7 +4,7 @@
     <el-row >
       <el-col :span="12">
         <el-form ref="form" :model="form" label-width="120px" style="padding-top: 10vh;">
-          <el-form-item label="电影名称" style="width: 100%;">
+          <el-form-item label="电影名称" >
             <el-autocomplete
               v-model="form.name"
               :fetch-suggestions="movieSearchSuggest"
@@ -47,7 +47,20 @@
               @close="handleDirectorTagClose(tag)">
               {{tag}}
             </el-tag>
-            <el-input
+            <el-autocomplete
+              class="input-new-tag"
+              v-if="directorInputVisible"
+              v-model="directorInputValue"
+              ref="saveDirectorTagInput"
+              size="small"
+              @keyup.enter.native="handleDirectorInputConfirm(true)"
+              
+              :fetch-suggestions="directorSearchSuggest"
+              placeholder="请输入内容"
+              @select="handleDirectorSelect"
+              style="width: 20vw;"
+            ></el-autocomplete>
+            <!-- <el-input
                 class="input-new-tag"
                 v-if="directorInputVisible"
                 v-model="directorInputValue"
@@ -55,7 +68,7 @@
                 size="small"
                 @keyup.enter.native="handleDirectorInputConfirm"
                 @blur="handleDirectorInputConfirm"
-              >
+              > -->
               </el-input>
               <el-button v-if="!directorInputVisible && form.movieDirectors.length<5" class="button-new-tag" size="small" 
               @click="showDirectorInput()">
@@ -426,8 +439,13 @@ export default {
     handleSelect(item) {
       console.log(item);
     },
+    handleDirectorSelect(item) {
+      this.handleDirectorInputConfirm(false)
+    },
+    /**
+     * 下面是搜索建议的函数
+     **/
     movieSearchSuggest(queryString, cb){
-      console.log("queryString为：",queryString)
       var axios = require('axios');
 
       var config = {
@@ -443,6 +461,32 @@ export default {
         console.log(response.data)
         var result=[]
         for(let i=0;i<response.data.length;++i){
+          result.push({"value":response.data[i]})
+        }
+        cb(result);
+      })
+      .catch(function (error) {
+        this.$message.error('当前网络异常，请稍后再试');
+      });
+    },
+    directorSearchSuggest(queryString, cb){
+      var axios = require('axios');
+
+      var config = {
+        method: 'get',
+        url: this.BASE_URL+'/mysql/association/director',
+        params:{"directorName":queryString},
+        headers: { }
+      };
+
+      // 向mysql 发送请求
+      axios(config)
+      .then(response=> {
+        var result=[]
+        for(let i=response.data.length-1;i>=0;--i){
+          if(result.length>=25){
+            break
+          }
           result.push({"value":response.data[i]})
         }
         cb(result);
@@ -582,18 +626,22 @@ export default {
         this.$refs.saveDirectorTagInput.$refs.input.focus();
       });
     },
-    handleDirectorInputConfirm() {
+    
+    handleDirectorInputConfirm(showMessage) {
       let inputValue = this.directorInputValue
       // 有效性判断
       if (!inputValue || inputValue.replace(/\s*/g,"").length==0) {
         if(!this.directorInputVisible){
           return;
         }
-        this.$message({
-          message: '请输入有效的导演名称！',
-          type: 'warning'
-        })
-        this.directorInputVisible=false;
+        if(showMessage){
+            this.$message({
+            message: '请输入有效的导演名称！',
+            type: 'warning'
+          })
+          this.directorInputVisible=false;
+        }
+        
         return;
       }
       this.form.movieDirectors.push(inputValue.replace(/^\s*|\s*$/g,""));
