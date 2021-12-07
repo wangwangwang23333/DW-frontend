@@ -11,6 +11,7 @@
               placeholder="请输入内容"
               @select="handleSelect"
               style="width: 20vw;"
+              clearable
             ></el-autocomplete>
             
           </el-form-item>
@@ -59,6 +60,7 @@
               placeholder="请输入内容"
               @select="handleDirectorSelect"
               style="width: 20vw;"
+              clearable
             ></el-autocomplete>
             <!-- <el-input
                 class="input-new-tag"
@@ -88,7 +90,20 @@
               @close="handleMainActorTagClose(tag)">
               {{tag}}
             </el-tag>
-            <el-input
+            <el-autocomplete
+            class="input-new-tag"
+            v-if="mainActorInputVisible"
+            v-model="mainActorInputValue"
+            ref="saveMainActorTagInput"
+            size="small"
+            @keyup.enter.native="handleMainActorInputConfirm"
+            :fetch-suggestions="actorSearchSuggest"
+            placeholder="请输入内容"
+            @select="handleMainActorSelect"
+            style="width: 20vw;"
+            clearable
+          ></el-autocomplete>
+            <!-- <el-input
                 class="input-new-tag"
                 v-if="mainActorInputVisible"
                 v-model="mainActorInputValue"
@@ -97,7 +112,7 @@
                 @keyup.enter.native="handleMainActorInputConfirm"
                 @blur="handleMainActorInputConfirm"
               >
-              </el-input>
+              </el-input> -->
               <el-button v-if="!mainActorInputVisible && form.movieMainActors.length<5" class="button-new-tag" size="small" 
               @click="showMainActorInput()">
                 添加主演
@@ -117,7 +132,20 @@
               @close="handleActorTagClose(tag)">
               {{tag}}
             </el-tag>
-            <el-input
+            <el-autocomplete
+            class="input-new-tag"
+            v-if="actorInputVisible"
+            v-model="actorInputValue"
+            ref="saveActorTagInput"
+            size="small"
+            @keyup.enter.native="handleActorInputConfirm"
+            :fetch-suggestions="actorSearchSuggest"
+            placeholder="请输入内容"
+            @select="handleActorSelect"
+            style="width: 20vw;"
+            clearable
+          ></el-autocomplete>
+            <!-- <el-input
                 class="input-new-tag"
                 v-if="actorInputVisible"
                 v-model="actorInputValue"
@@ -126,7 +154,7 @@
                 @keyup.enter.native="handleActorInputConfirm"
                 @blur="handleActorInputConfirm"
               >
-              </el-input>
+              </el-input> -->
               <el-button v-if="!actorInputVisible && form.movieActors.length<5" class="button-new-tag" size="small" 
               @click="showActorInput()">
                 添加演员
@@ -442,6 +470,12 @@ export default {
     handleDirectorSelect(item) {
       this.handleDirectorInputConfirm(false)
     },
+    handleMainActorSelect(item){
+      this.handleMainActorInputConfirm()
+    },
+    handleActorSelect(item){
+      this.handleActorInputConfirm()
+    },
     /**
      * 下面是搜索建议的函数
      **/
@@ -476,6 +510,32 @@ export default {
         method: 'get',
         url: this.BASE_URL+'/mysql/association/director',
         params:{"directorName":queryString},
+        headers: { }
+      };
+
+      // 向mysql 发送请求
+      axios(config)
+      .then(response=> {
+        var result=[]
+        for(let i=response.data.length-1;i>=0;--i){
+          if(result.length>=25){
+            break
+          }
+          result.push({"value":response.data[i]})
+        }
+        cb(result);
+      })
+      .catch(function (error) {
+        this.$message.error('当前网络异常，请稍后再试');
+      });
+    },
+    actorSearchSuggest(queryString, cb){
+      var axios = require('axios');
+
+      var config = {
+        method: 'get',
+        url: this.BASE_URL+'/mysql/association/actor',
+        params:{"actorName":queryString},
         headers: { }
       };
 
@@ -609,7 +669,8 @@ export default {
       .then(response=> {
         this.chartData.rows[2].speed=response.data.time
       })
-      .catch(function (error) {
+      .catch(error=> {
+        console.log(error)
         this.$message.error('当前网络异常，请稍后再试');
       });
 
