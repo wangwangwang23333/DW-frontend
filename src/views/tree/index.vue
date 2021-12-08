@@ -1,10 +1,10 @@
 <template>
   <div class="app-container">
-    <el-row>
+    <el-row style="height: 34vh;">
       <el-col :span="12">
         <el-form>
           <el-form-item>
-            <el-button>合作次数最多的演员</el-button>
+            <el-button @click="mostCooperateActorsButton">合作次数最多的演员</el-button>
           </el-form-item>
           <el-form-item>
             <el-button>合作次数最多的导演</el-button>
@@ -36,11 +36,21 @@
        </el-tabs>
       </el-col>
     </el-row>
-
+    <el-divider></el-divider>
+    <div id="network_id" class="network" slot="reference"   
+      style="height:50vh; background: linear-gradient(to bottom, #536976, #292E49);" :span="24"
+    >
+    </div>
   </div>
 </template>
 
 <script>
+import Vis from "vis";
+
+
+const BASE_URL='http://localhost:8101'
+
+
 export default {
 
   data() {
@@ -187,17 +197,223 @@ export default {
         ],
       },
       activeName: 'first',
+
+      nodeMap: null,
+      nodes:[],
+      nodesArray:[],
+      edges:[],
+      edgesArray:[],
+      container:null,
+      options: {
+        autoResize: true, //网络将自动检测其容器的大小调整，并相应地重绘自身
+        locale: "cn", //语言设置：工具栏显示中文
+        //设置语言
+        locales: {
+          cn: {
+            //工具栏中文翻译
+            edit: "编辑",
+            del: "删除当前节点或关系",
+            back: "返回",
+            addNode: "添加节点",
+            addEdge: "添加连线",
+            editNode: "编辑节点",
+            editEdge: "编辑连线",
+            addDescription: "点击空白处可添加节点",
+            edgeDescription: "点击某个节点拖拽连线可连接另一个节点",
+            editEdgeDescription: "可拖拽连线改变关系",
+            createEdgeError: "无法将边连接到集群",
+            deleteClusterError: "无法删除集群.",
+            editClusterError: "无法编辑群集'"
+          }
+        },
+        // 设置节点样式
+        nodes: {
+          shape: "circle",
+          size: 15,
+          font: {
+            //字体配置
+            size: 15
+          },
+          color: {
+            border: "#f1e7ea", //节点边框颜色
+            background: "#97C2FC", //节点背景颜色
+            highlight: {
+              //节点选中时状态颜色
+              border: "#f1e7ea",
+              background: "#D2E5FF"
+            },
+            hover: {
+              //节点鼠标滑过时状态颜色
+              border: "#f1e7ea",
+              background: "#D2E5FF"
+            }
+          },
+          borderWidth: 3, //节点边框宽度，单位为px
+          borderWidthSelected: 5 //节点被选中时边框的宽度，单位为px
+        },
+        // 边线配置
+        edges: {
+          width: 3,
+          length: 300,
+          color: {
+            color: "#f1e7ea",
+            highlight: "#f1f7fa",
+            hover: "#f1f7fa",
+            inherit: "from",
+            opacity: 1.0
+          },
+          shadow: true,
+          smooth: {
+            //设置两个节点之前的连线的状态
+            enabled: true //默认是true，设置为false之后，两个节点之前的连线始终为直线，不会出现贝塞尔曲线
+          },
+          arrows: {to: true} //箭头指向to
+        },
+        //计算节点之前斥力，进行自动排列的属性
+        physics: {
+          enabled: true, //默认是true，设置为false后，节点将不会自动改变，拖动谁谁动。不影响其他的节点
+          barnesHut: {
+            gravitationalConstant: -4000,
+            centralGravity: 0.3,
+            springLength: 120,
+            springConstant: 0.04,
+            damping: 0.09,
+            avoidOverlap: 0
+          }
+        },
+        //用于所有用户与网络的交互。处理鼠标和触摸事件以及导航按钮和弹出窗口
+        interaction: {
+          dragNodes: true, //是否能拖动节点
+          dragView: true, //是否能拖动画布
+          hover: true, //鼠标移过后加粗该节点和连接线
+          multiselect: true, //按 ctrl 多选
+          selectable: true, //是否可以点击选择
+          selectConnectedEdges: true, //选择节点后是否显示连接线
+          hoverConnectedEdges: true, //鼠标滑动节点后是否显示连接线
+          zoomView: true //是否能缩放画布
+        },
+        //操作模块:包括 添加、删除、获取选中点、设置选中点、拖拽系列、点击等等
+        manipulation: {
+          enabled: false, //该属性表示可以编辑，出现编辑操作按钮
+          addNode: true,
+          addEdge: true,
+          editEdge: true,
+          deleteNode: true,
+          deleteEdge: true
+        },
+        layout: {
+          improvedLayout: false
+        }
+      },
+      visData:{},
+
+      actorNodes:[],
+
+      personColor:{
+        background: '#f57797',
+        highlight: "#fbc7d4",
+        hover: "#fbc7d4"
+      },
+      movieColor:{
+        background: "#7574eb",
+        highlight: "#b9b8f5",
+        hover: "#b9b8f5"
+      },
     }
   },
   watch: {
    
   },
 
+  created(){
+    this.nodeMap=new Map()
+    
+  },
+
+  mounted(){
+    this.initializeOptions()
+  },
+
   methods: {
     handleClick(tab, event) {
       console.log(tab, event);
-    }
+    },
+
+    clickSearch(){
+      //清空上一轮的搜索结果
+      
+      this.initializeOptions();
+    },
+    mostCooperateActorAndDirectorButton(){
+
+    },
+
+    mostCooperateActorsButton(){
+      var axios = require('axios');
+
+      var config = {
+        method: 'get',
+        url: BASE_URL+'/neo4j/relation/actors',
+        headers: { }
+      };
+
+      axios(config)
+      .then(response=> {
+        console.log(JSON.stringify(response.data.actor));
+        // 将返回值添加成两个结点
+        this.actorNodes=response.data.actor
+
+        this.drawMap()
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+      
+    },
+
+    initializeOptions(){
+      this.nodes = new Vis.DataSet();
+
+      // 创建边数据数组
+      this.edges = new Vis.DataSet();
+
+      // 获取容器
+      var container = document.getElementById('network_id');
+
+      // 将数据赋值给vis 数据格式化器
+      var data = {
+          nodes: this.nodes,
+          edges: this.edges
+      };
+
+      // 初始化关系图
+      var network = new Vis.Network(container, data, this.options);
+      network.on("click",params=>{
+        let nodeId = network.getNodeAt(params.pointer.DOM);
+        if(nodeId != undefined){
+          network.selectNodes([nodeId]);
+          let selectedNode = network.getSelectedNodes()
+          console.log(selectedNode)
+        }
+      })
+
+    },
+
+    drawMap(){
+      for(let i=0;i<this.actorNodes.length;++i){
+        this.nodes.add({
+          id:i,
+          label:this.actorNodes[i],
+          color: this.personColor
+        })
+      }
+    },
   }
 }
 </script>
 
+<style scoped>
+.el-divider--vertical{
+    height:35vh;
+  }
+</style>
