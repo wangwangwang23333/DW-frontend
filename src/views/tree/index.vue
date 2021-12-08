@@ -307,7 +307,7 @@ export default {
       },
       visData:{},
 
-      actorNodes:[],
+
 
       personColor:{
         background: '#f57797',
@@ -361,9 +361,18 @@ export default {
       .then(response=> {
         console.log(JSON.stringify(response.data.actor));
         // 将返回值添加成两个结点
-        this.actorNodes=response.data.actor
-
-        this.drawMap()
+        for(let i=0;i<response.data.actor.length;++i){
+          let newNode={
+            id:i,
+            label:response.data.actor[i],
+            color: this.personColor,
+            type:'actor'
+          }
+          this.nodes.add(newNode)
+          this.nodesArray.push(newNode)
+        }
+        
+ 
       })
       .catch(function (error) {
         console.log(error);
@@ -392,22 +401,21 @@ export default {
         let nodeId = network.getNodeAt(params.pointer.DOM);
         if(nodeId != undefined){
           network.selectNodes([nodeId]);
-          let selectedNode = network.getSelectedNodes()
-          console.log(selectedNode)
+          let selectedIndex = network.getSelectedNodes()[0]
+          console.log(this.nodesArray[selectedIndex])
+          if(this.nodesArray[selectedIndex]=="actor"){
+            // 演员，继续扩展
+          }
+          else if(this.nodesArray[selectedIndex]=="movie"){
+            // 电影，不再扩展
+            return;
+          }
         }
       })
 
     },
 
-    drawMap(){
-      for(let i=0;i<this.actorNodes.length;++i){
-        this.nodes.add({
-          id:i,
-          label:this.actorNodes[i],
-          color: this.personColor
-        })
-      }
-    },
+
   }
 }
 </script>
