@@ -23,7 +23,7 @@
                   v-model="form.category"
                   filterable
                   remote
-
+                  clearable
                   placeholder="请选择电影类别"
                   :remote-method="categoryRemoteSearch"
                   :loading="categoryLoading">
@@ -198,77 +198,65 @@
       <el-col :span="10">
         <el-tabs v-model="activeName" @tab-click="handleClick">
           <el-tab-pane label="查询结果" name="first">
-            用户管理
-            <el-table
-            height="460"
-              border
-              stripe
-    :data="movieData"
-    style="width: 100%">
-    <el-table-column type="expand">
-      <template slot-scope="props">
-        <el-form label-position="left" inline class="demo-table-expand">
-          <!-- <el-form-item>
-            <el-image src="https://m.media-amazon.com/images/I/81nbTAZ-p3S._SL1500_.jpg"
-            style="width: 30%;">
-            </el-image>
-            </el-form-item> -->
-          <el-form-item label="asin">
-            <span>{{ props.row.asin }}</span>
-          </el-form-item>
-          <el-form-item label="名称">
-            <span>{{ props.row.title }}</span>
-          </el-form-item>
-          <el-form-item label="版本">
-            <span>{{ props.row.edition }}</span>
-          </el-form-item>
-          <el-form-item label="格式">
-            <span>{{ props.row.format }}</span>
-          </el-form-item>
-          <el-form-item label="上映时间">
-            <span>{{ props.row.time }}</span>
-          </el-form-item>
-          <el-form-item label="评分">
-            <span>{{ props.row.score }}</span>
-          </el-form-item>
-          <el-form-item label="评论数量">
-            <span>{{ props.row.commentNum }}</span>
-          </el-form-item>
-        </el-form>
-      </template>
-        </el-table-column>
-        <el-table-column
-                prop="asin"
-                label="编号"
-                width="120">
+            <p v-if="hasResult">
+              共有{{movieNumber}}个结果
+            </p>
+            <el-table height="460" border stripe :data="movieData" style="width: 100%">
+              <el-table-column type="expand">
+                <template slot-scope="props">
+                  <el-form label-position="left" inline class="demo-table-expand">
+                    <!-- <el-form-item>
+                        <el-image src="https://m.media-amazon.com/images/I/81nbTAZ-p3S._SL1500_.jpg"
+                        style="width: 30%;">
+                        </el-image>
+                        </el-form-item> -->
+                    <el-form-item label="asin">
+                      <span>{{ props.row.asin }}</span>
+                    </el-form-item>
+                    <el-form-item label="名称">
+                      <span>{{ props.row.title }}</span>
+                    </el-form-item>
+                    <el-form-item label="版本">
+                      <span>{{ props.row.edition }}</span>
+                    </el-form-item>
+                    <el-form-item label="格式">
+                      <span>{{ props.row.format }}</span>
+                    </el-form-item>
+                    <el-form-item label="上映时间">
+                      <span>{{ props.row.time }}</span>
+                    </el-form-item>
+                    <el-form-item label="评分">
+                      <span>{{ props.row.score }}</span>
+                    </el-form-item>
+                    <el-form-item label="评论数量">
+                      <span>{{ props.row.commentNum }}</span>
+                    </el-form-item>
+                  </el-form>
+                </template>
               </el-table-column>
-              <el-table-column
-                prop="title"
-                label="名称"
-                width="250">
+              <el-table-column prop="asin" label="编号" width="120">
+              </el-table-column>
+              <el-table-column prop="title" label="名称" width="250">
               </el-table-column>
               <!-- <el-table-column
-                prop="edition"
-                label="版本">
-              </el-table-column>
-              <el-table-column
-                prop="format"
-                label="格式">
-              </el-table-column> -->
-              <el-table-column
-                prop="time"
-                label="上映时间">
+                            prop="edition"
+                            label="版本">
+                          </el-table-column>
+                          <el-table-column
+                            prop="format"
+                            label="格式">
+                          </el-table-column> -->
+              <el-table-column prop="time" label="上映时间">
               </el-table-column>
               <!-- <el-table-column
-                prop="score"
-                label="评分">
-              </el-table-column>
-              <el-table-column
-                prop="commentNum"
-                label="评论总数">
-              </el-table-column> -->
-      </el-table>
-            
+                            prop="score"
+                            label="评分">
+                          </el-table-column>
+                          <el-table-column
+                            prop="commentNum"
+                            label="评论总数">
+                          </el-table-column> -->
+            </el-table>
 
           </el-tab-pane>
           <el-tab-pane label="数据血缘" name="second">
@@ -541,6 +529,7 @@ export default {
 
       categoryLoading:false,
       movieCategory:[],
+      movieNumber:0,
       }
   },
   created() {
@@ -657,7 +646,7 @@ export default {
         params:{"category":query},
         headers: { }
       };
-
+      
       // 向mysql 发送请求
       axios(config)
       .then(response=> {
@@ -668,6 +657,7 @@ export default {
           }
           result.push({"value":response.data[i]})
         }
+        
         this.movieCategory=result;
         this.categoryLoading=false;
       })
@@ -793,6 +783,7 @@ export default {
         this.chartData.rows[2].speed=response.data.time
         console.log(response.data)
         let movieList=response.data.movies
+        this.movieNumber = response.data.movieNum
         for(let i=0;i<movieList.length;++i){
           let newMovie = {}
           newMovie.asin = movieList[i].asin
