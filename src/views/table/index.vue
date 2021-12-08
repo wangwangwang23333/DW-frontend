@@ -726,9 +726,17 @@ export default {
           if (movieList[i].hasOwnProperty("commentNum")) {
             newMovie.commentNum = movieList[i].commentNum
           }
-          //edition format time score commentNum
-          console.log(movieList[i].edition,movieList[i].hasOwnProperty("edition"))
-          //this.movieData
+          var movieTime=""
+          if (movieList[i].hasOwnProperty("year")) {
+            movieTime += movieList[i].year
+          }
+          if (movieList[i].hasOwnProperty("month")) {
+            movieTime += movieList[i].month
+          }
+          if (movieList[i].hasOwnProperty("day")) {
+            movieTime += movieList[i].day
+          }
+          newMovie.time=movieTime
           this.movieData.push(newMovie)
         }
       })
