@@ -193,6 +193,11 @@
     <el-table-column type="expand">
       <template slot-scope="props">
         <el-form label-position="left" inline class="demo-table-expand">
+          <!-- <el-form-item>
+            <el-image src="https://m.media-amazon.com/images/I/81nbTAZ-p3S._SL1500_.jpg"
+            style="width: 30%;">
+            </el-image>
+            </el-form-item> -->
           <el-form-item label="asin">
             <span>{{ props.row.asin }}</span>
           </el-form-item>
