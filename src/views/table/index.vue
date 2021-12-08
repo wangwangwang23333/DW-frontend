@@ -19,10 +19,25 @@
           <el-row >
             <el-col :span="10">
               <el-form-item label="电影类别">
-                <el-select v-model="form.category" placeholder="请选择电影类别">
+                <el-select
+                  v-model="form.category"
+                  filterable
+                  remote
+
+                  placeholder="请选择电影类别"
+                  :remote-method="categoryRemoteSearch"
+                  :loading="categoryLoading">
+                  <el-option
+                    v-for="item in movieCategory"
+                    :key="item.value"
+                    :label="item.value"
+                    :value="item.value">
+                  </el-option>
+                </el-select>
+                <!-- <el-select v-model="form.category" placeholder="请选择电影类别">
                   <el-option label="Zone one" value="shanghai" />
                   <el-option label="Zone two" value="beijing" />
-                </el-select>
+                </el-select> -->
               </el-form-item>
             </el-col>
             <el-col :span="14">
@@ -523,6 +538,9 @@ export default {
       searchText:'暂无查询',
       BASE_URL:'http://localhost:8101',
       movieData:[],
+
+      categoryLoading:false,
+      movieCategory:[],
       }
   },
   created() {
@@ -621,6 +639,37 @@ export default {
           result.push({"value":response.data[i]})
         }
         cb(result);
+      })
+      .catch(function (error) {
+        this.$message.error('当前网络异常，请稍后再试');
+      });
+    },
+    
+    categoryRemoteSearch(query){
+
+      this.categoryLoading = true;
+      // 发送api请求
+      var axios = require('axios');
+
+      var config = {
+        method: 'get',
+        url: this.BASE_URL+'/mysql/association/category',
+        params:{"category":query},
+        headers: { }
+      };
+
+      // 向mysql 发送请求
+      axios(config)
+      .then(response=> {
+        var result=[]
+        for(let i=response.data.length-1;i>=0;--i){
+          if(result.length>=25){
+            break
+          }
+          result.push({"value":response.data[i]})
+        }
+        this.movieCategory=result;
+        this.categoryLoading=false;
       })
       .catch(function (error) {
         this.$message.error('当前网络异常，请稍后再试');
