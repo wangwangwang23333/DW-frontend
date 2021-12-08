@@ -184,6 +184,42 @@
         <el-tabs v-model="activeName" @tab-click="handleClick">
           <el-tab-pane label="查询结果" name="first">
             用户管理
+            <el-table
+              :data="movieData"
+              height="250"
+              border
+              style="width: 100%">
+              <el-table-column
+                prop="asin"
+                label="编号"
+                width="100">
+              </el-table-column>
+              <el-table-column
+                prop="title"
+                label="名称"
+                width="120">
+              </el-table-column>
+              <el-table-column
+                prop="edition"
+                label="版本">
+              </el-table-column>
+              <el-table-column
+                prop="format"
+                label="格式">
+              </el-table-column>
+              <el-table-column
+                prop="time"
+                label="上映时间">
+              </el-table-column>
+              <el-table-column
+                prop="score"
+                label="评分">
+              </el-table-column>
+              <el-table-column
+                prop="commentNum"
+                label="评论总数">
+              </el-table-column>
+            </el-table>
 
           </el-tab-pane>
           <el-tab-pane label="数据血缘" name="second">
@@ -452,6 +488,7 @@ export default {
       activeName: 'first',
       searchText:'暂无查询',
       BASE_URL:'http://localhost:8101',
+      movieData:[],
       }
   },
   created() {
@@ -671,6 +708,29 @@ export default {
       axios(config)
       .then(response=> {
         this.chartData.rows[2].speed=response.data.time
+        console.log(response.data)
+        let movieList=response.data.movies
+        for(let i=0;i<movieList.length;++i){
+          let newMovie = {}
+          newMovie.asin = movieList[i].asin
+          newMovie.title = movieList[i].title
+          if (movieList[i].hasOwnProperty("edition")) {
+            newMovie.edition = movieList[i].edition
+          }
+          if (movieList[i].hasOwnProperty("format")) {
+            newMovie.format = movieList[i].format
+          }
+          if (movieList[i].hasOwnProperty("score")) {
+            newMovie.score = movieList[i].score
+          }
+          if (movieList[i].hasOwnProperty("commentNum")) {
+            newMovie.commentNum = movieList[i].commentNum
+          }
+          //edition format time score commentNum
+          console.log(movieList[i].edition,movieList[i].hasOwnProperty("edition"))
+          //this.movieData
+          this.movieData.push(newMovie)
+        }
       })
       .catch(error=> {
         console.log(error)
@@ -682,6 +742,7 @@ export default {
     },
 
     clearResult(){
+      this.movieData.splice(0,this.movieData.length)
       for(let i=0;i<3;++i){
         this.chartData.rows[i].speed=0
       }
