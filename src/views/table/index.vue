@@ -185,41 +185,70 @@
           <el-tab-pane label="查询结果" name="first">
             用户管理
             <el-table
-              :data="movieData"
-              height="250"
+            height="460"
               border
-              style="width: 100%">
-              <el-table-column
+              stripe
+    :data="movieData"
+    style="width: 100%">
+    <el-table-column type="expand">
+      <template slot-scope="props">
+        <el-form label-position="left" inline class="demo-table-expand">
+          <el-form-item label="asin">
+            <span>{{ props.row.asin }}</span>
+          </el-form-item>
+          <el-form-item label="名称">
+            <span>{{ props.row.title }}</span>
+          </el-form-item>
+          <el-form-item label="版本">
+            <span>{{ props.row.edition }}</span>
+          </el-form-item>
+          <el-form-item label="格式">
+            <span>{{ props.row.format }}</span>
+          </el-form-item>
+          <el-form-item label="上映时间">
+            <span>{{ props.row.time }}</span>
+          </el-form-item>
+          <el-form-item label="评分">
+            <span>{{ props.row.score }}</span>
+          </el-form-item>
+          <el-form-item label="评论数量">
+            <span>{{ props.row.commentNum }}</span>
+          </el-form-item>
+        </el-form>
+      </template>
+        </el-table-column>
+        <el-table-column
                 prop="asin"
                 label="编号"
-                width="100">
+                width="120">
               </el-table-column>
               <el-table-column
                 prop="title"
                 label="名称"
                 width="120">
               </el-table-column>
-              <el-table-column
+              <!-- <el-table-column
                 prop="edition"
                 label="版本">
               </el-table-column>
               <el-table-column
                 prop="format"
                 label="格式">
-              </el-table-column>
+              </el-table-column> -->
               <el-table-column
                 prop="time"
                 label="上映时间">
               </el-table-column>
-              <el-table-column
+              <!-- <el-table-column
                 prop="score"
                 label="评分">
               </el-table-column>
               <el-table-column
                 prop="commentNum"
                 label="评论总数">
-              </el-table-column>
-            </el-table>
+              </el-table-column> -->
+      </el-table>
+            
 
           </el-tab-pane>
           <el-tab-pane label="数据血缘" name="second">
@@ -728,13 +757,13 @@ export default {
           }
           var movieTime=""
           if (movieList[i].hasOwnProperty("year")) {
-            movieTime += movieList[i].year
+            movieTime += movieList[i].year+"年"
           }
           if (movieList[i].hasOwnProperty("month")) {
-            movieTime += movieList[i].month
+            movieTime += movieList[i].month+"月"
           }
           if (movieList[i].hasOwnProperty("day")) {
-            movieTime += movieList[i].day
+            movieTime += movieList[i].day+"日"
           }
           newMovie.time=movieTime
           this.movieData.push(newMovie)
@@ -868,5 +897,18 @@ export default {
   }
   .el-divider--vertical{
     height:75vh;
+  }
+
+  .demo-table-expand {
+    font-size: 0;
+  }
+  .demo-table-expand label {
+    width: 90px;
+    color: #99a9bf;
+  }
+  .demo-table-expand .el-form-item {
+    margin-right: 0;
+    margin-bottom: 0;
+    width: 50%;
   }
 </style>
