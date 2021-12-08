@@ -225,7 +225,7 @@
               <el-table-column
                 prop="title"
                 label="名称"
-                width="120">
+                width="250">
               </el-table-column>
               <!-- <el-table-column
                 prop="edition"
@@ -909,6 +909,6 @@ export default {
   .demo-table-expand .el-form-item {
     margin-right: 0;
     margin-bottom: 0;
-    width: 50%;
+    width: 100%;
   }
 </style>
