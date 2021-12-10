@@ -359,7 +359,6 @@ export default {
 
       axios(config)
       .then(response=> {
-        console.log(JSON.stringify(response.data.actor));
         // 将返回值添加成两个结点
         for(let i=0;i<response.data.actor.length;++i){
           let newNode={
@@ -372,7 +371,43 @@ export default {
           this.nodesArray.push(newNode)
         }
         
- 
+        // 根据两个演员获取它们出演过的电影
+        axios({
+            method: 'get',
+            url: BASE_URL + '/mysql/association/movie/actors',
+            params:{"actor1":response.data.actor[0], "actor2": response.data.actor[1]},
+            headers: {}
+          })
+        .then(res=> {
+          console.log(JSON.stringify(res.data));
+          let movieList=res.data
+          // 添加电影结点
+          for(let i=0;i<movieList.length;++i){
+            let newNode={
+              id:i+2,
+              label:movieList[i].substring(0,4)+"...",
+              color: this.movieColor,
+              type:'movie'
+            }
+            this.nodes.add(newNode)
+            this.nodesArray.push(newNode)
+            // 两个演员和它们之间的关系
+            let newEdge={
+              from:0,
+              to:i+2,
+              label:"Act"
+            }
+            this.edges.add(newEdge)
+            newEdge={
+              from:1,
+              to:i+2,
+              label:"Act"
+            }
+            this.edges.add(newEdge)
+          }
+        })
+
+
       })
       .catch(function (error) {
         console.log(error);
