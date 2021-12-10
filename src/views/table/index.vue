@@ -198,10 +198,10 @@
       <el-col :span="10">
         <el-tabs v-model="activeName" @tab-click="handleClick">
           <el-tab-pane label="查询结果" name="first">
-            <p v-if="hasResult">
+            <p v-if="hasResult ">
               共有{{movieNumber}}个结果
             </p>
-            <el-table height="460" border stripe :data="movieData" style="width: 100%">
+            <el-table v-loading="movieLoading" height="460" border stripe :data="movieData" style="width: 100%">
               <el-table-column type="expand">
                 <template slot-scope="props">
                   <el-form label-position="left" inline class="demo-table-expand">
@@ -333,6 +333,7 @@ export default {
         movieMinScore:0,
         movieMaxScore:5.0,
         movieDate:[],
+        movieLoading:false,
       },
       labelColor:["#77C9D4","#57BC90","#015249"],
       pickerOptions: {
@@ -785,6 +786,7 @@ export default {
         data:searchCondition,
         headers: { }
       };
+      this.movieLoading=true;
 
       // 向neo4j 发送请求
       axios(config)
@@ -823,6 +825,8 @@ export default {
 
           this.movieData.push(newMovie)
         }
+
+        this.movieLoading=false;
 
         // 发送api获取导演信息、主演信息、演员信息
         for(let i=0;i<this.movieData.length;++i){
