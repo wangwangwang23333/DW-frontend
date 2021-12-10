@@ -17,7 +17,7 @@
           </el-form-item>
     
           <el-row >
-            <el-col :span="10">
+            <el-col :span="13">
               <el-form-item label="电影类别">
                 <el-select
                   v-model="form.category"
@@ -40,7 +40,7 @@
                 </el-select> -->
               </el-form-item>
             </el-col>
-            <el-col :span="14">
+            <el-col :span="16">
               <el-form-item label="上映时间">
                 <el-date-picker v-model="form.movieDate" type="daterange" align="right" unlink-panels range-separator="至"
                     start-placeholder="开始日期" end-placeholder="结束日期" 
@@ -253,9 +253,9 @@
             </el-table>
 
           </el-tab-pane>
-          <el-tab-pane label="数据血缘" name="second">
+          <!-- <el-tab-pane label="数据血缘" name="second">
             配置管理
-          </el-tab-pane>
+          </el-tab-pane> -->
           <el-tab-pane label="速度对比" name="third" :disabled="!hasResult">
 
             <ve-histogram
@@ -325,8 +325,9 @@ export default {
         movieMinScore:0,
         movieMaxScore:5.0,
         movieDate:[],
-        movieLoading:false,
+        
       },
+      movieLoading:false,
       labelColor:["#77C9D4","#57BC90","#015249"],
       pickerOptions: {
           disabledDate(time) {
@@ -371,6 +372,15 @@ export default {
               const end = new Date();
               const start = new Date();
               start.setTime(start.getTime() - 3600 * 1000 * 24 * 365);
+              picker.$emit('pick', [start, end]);
+            }
+          },
+          {
+            text: '最近三年',
+            onClick(picker) {
+              const end = new Date();
+              const start = new Date();
+              start.setTime(start.getTime() - 3600 * 1000 * 24 * 365 * 3);
               picker.$emit('pick', [start, end]);
             }
           },
@@ -736,9 +746,7 @@ export default {
 
     downloadFile(){
       var blob = new Blob([this.movieDataToString(this.movieData)], {type: '.csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel'});
-      console.log(blob);
       const url3 = window.URL.createObjectURL(blob);
-      console.log(url3);
       var filename = this.searchText + '.csv';
       const link = document.createElement('a');
       link.style.display = 'none';
@@ -749,6 +757,10 @@ export default {
     },
 
     searchMovie(){
+      
+      // 清空上一轮查询结果
+      this.clearResult();
+
       Date.prototype.format = function(format)
         {
         var o = {
@@ -776,7 +788,8 @@ export default {
         searchText+=" 电影名为"+this.form.name+""
         searchCondition.movieName=this.form.name
       }
-      if(this.form.movieDate.length!=0){
+      console.log(this.form)
+      if(this.form.movieDate!=null && this.form.movieDate.length!=0){
         searchCondition.minYear=this.form.movieDate[0].format("yyyy")
         searchCondition.minMonth=this.form.movieDate[0].format("MM")
         searchCondition.minDay=this.form.movieDate[0].format("dd")
@@ -828,7 +841,8 @@ export default {
         searchCondition.maxScore=this.form.movieMaxScore
         searchText+=" 评分在"+searchCondition.minScore+"到"+searchCondition.maxScore+"之间"
       }
-
+      // 设置参数
+      console.log("搜索条件为",searchCondition)
    
       if(Object.keys(searchCondition).length==0){
         this.$message({
@@ -841,11 +855,7 @@ export default {
       this.searchText=searchText
       this.vchartsConfig.extend.title.subtext=searchText
 
-      // 设置参数
-      console.log("搜索条件为",searchCondition)
-
-      // 清空上一轮查询结果
-      this.clearResult();
+      
 
       // 发送api
       var axios = require('axios');
@@ -900,7 +910,6 @@ export default {
 
         // 发送api获取导演信息、主演信息、演员信息
         for(let i=0;i<this.movieData.length;++i){
-          console.log(this.movieData[i].asin)
           axios({
             method: 'get',
             url: this.BASE_URL + '/mysql/association/movie/director',
@@ -908,7 +917,6 @@ export default {
             headers: {}
           })
           .then(response => {
-            console.log("导演信息为",response.data)
             this.movieData[response.data.index].director=response.data.director
           })
           axios({
@@ -918,7 +926,6 @@ export default {
             headers: {}
           })
           .then(response => {
-            console.log(response.data)
             this.movieData[response.data.index].mainActor=response.data.mainActor
           })
           axios({
@@ -936,7 +943,6 @@ export default {
         
       })
       .catch(error=> {
-        console.log(error)
         this.$message.error('当前网络异常，请稍后再试');
       });
 
@@ -951,6 +957,7 @@ export default {
       for(let i=0;i<3;++i){
         this.chartData.rows[i].speed=0
       }
+      this.searchText="暂无查询"
       
     },
 
