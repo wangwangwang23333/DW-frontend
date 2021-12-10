@@ -1,5 +1,24 @@
 <template>
   <div class="app-container">
+    <el-dialog
+        title="电影详情"
+        :visible.sync="dialogVisible"
+        @close="dialogVisible=false;"
+        width="25%"
+        center
+    >
+      <div>
+        <p>Species:</p>
+        <p>Name:</p>
+        <p>Id:</p>
+      </div>
+      <div slot="footer">
+        <el-button type="primary" @click="viewOriginWeb()">查看原始网页</el-button>
+        <br><br>
+        <el-button @click="dialogVisible = false">关闭</el-button>
+      </div>
+    </el-dialog>
+
     <el-row style="height: 34vh;">
       <el-col :span="12">
         <el-form>
@@ -7,7 +26,7 @@
             <el-button @click="mostCooperateActorsButton">合作次数最多的演员</el-button>
           </el-form-item>
           <el-form-item>
-            <el-button>合作次数最多的导演</el-button>
+            <el-button @click="mostCooperateActorAndDirectorButton">合作次数最多的导演</el-button>
           </el-form-item>
         </el-form>
       </el-col>
@@ -37,9 +56,19 @@
       </el-col>
     </el-row>
     <el-divider></el-divider>
-    <div id="network_id" class="network" slot="reference"   
+    
+    <div id="network_id" class="network" slot="reference" 
+      v-loading="loading"  
+      element-loading-text="正在搜索中"
+      element-loading-background="rgba(0, 0, 0, 0.1)"
       style="height:50vh; background: linear-gradient(to bottom, #536976, #292E49);" :span="24"
     >
+    <el-image 
+    :src="require('@/assets/finderBlank.png')"
+    v-if="nodes.length == 0 && !loading"
+    style="
+    height:40vh;margin-left: 20%;
+    margin-top:-80%;z-index: 999;"></el-image>
     </div>
   </div>
 </template>
@@ -56,6 +85,7 @@ export default {
   data() {
     return {
       hasResult:false,
+      loading:false,
       // 速度比较图
       vchartsConfig: {
         setting:{
@@ -307,7 +337,7 @@ export default {
       },
       visData:{},
 
-
+      dialogVisible:false,
 
       personColor:{
         background: '#f57797',
@@ -335,6 +365,10 @@ export default {
   },
 
   methods: {
+    viewOriginWeb(){
+
+    },
+
     handleClick(tab, event) {
       console.log(tab, event);
     },
@@ -345,10 +379,87 @@ export default {
       this.initializeOptions();
     },
     mostCooperateActorAndDirectorButton(){
+      this.initializeOptions();
 
+      var axios = require('axios');
+      this.loading=true;
+      var config = {
+        method: 'get',
+        url: BASE_URL+'/neo4j/relation/actorAndDirector',
+        headers: { }
+      };
+
+      // neo4j 查询
+      axios(config)
+      .then(response=> {
+        console.log(response.data)
+        // 将返回值添加成两个结点
+        let newNode={
+          id:0,
+          label:response.data.actor,
+          color: this.personColor,
+          type:'actor'
+        }
+        this.nodes.add(newNode)
+        this.nodesArray.push(newNode)
+
+        newNode={
+          id:1,
+          label:response.data.director,
+          color: this.personColor,
+          type:'actor'
+        }
+        this.nodes.add(newNode)
+        this.nodesArray.push(newNode)
+        
+        // 根据导演和演员获取它们出演过的电影
+        axios({
+            method: 'get',
+            url: BASE_URL + '/mysql/association/movie/actorAndDirector',
+            params:{"actorName":response.data.actor, "directorName": response.data.director},
+            headers: {}
+          })
+        .then(res=> {
+          let movieList=res.data
+          // 添加电影结点
+          for(let i=0;i<movieList.length;++i){
+            let newNode={
+              id:i+2,
+              label:movieList[i].substring(0,4)+"...",
+              color: this.movieColor,
+              type:'movie',
+              movieName:movieList[i]
+            }
+            this.nodes.add(newNode)
+            this.nodesArray.push(newNode)
+            // 两个演员和它们之间的关系
+            let newEdge={
+              from:0,
+              to:i+2,
+              label:"Act"
+            }
+            this.edges.add(newEdge)
+            newEdge={
+              from:1,
+              to:i+2,
+              label:"Direct"
+            }
+            this.edges.add(newEdge)
+          }
+          this.loading=false;
+        })
+
+
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+      
     },
 
     mostCooperateActorsButton(){
+      this.initializeOptions();
+
       var axios = require('axios');
 
       var config = {
@@ -356,7 +467,8 @@ export default {
         url: BASE_URL+'/neo4j/relation/actors',
         headers: { }
       };
-
+      this.loading=true;
+      // neo4j 查询
       axios(config)
       .then(response=> {
         // 将返回值添加成两个结点
@@ -379,7 +491,6 @@ export default {
             headers: {}
           })
         .then(res=> {
-          console.log(JSON.stringify(res.data));
           let movieList=res.data
           // 添加电影结点
           for(let i=0;i<movieList.length;++i){
@@ -387,7 +498,8 @@ export default {
               id:i+2,
               label:movieList[i].substring(0,4)+"...",
               color: this.movieColor,
-              type:'movie'
+              type:'movie',
+              movieName:movieList[i]
             }
             this.nodes.add(newNode)
             this.nodesArray.push(newNode)
@@ -405,6 +517,7 @@ export default {
             }
             this.edges.add(newEdge)
           }
+          this.loading=false;
         })
 
 
@@ -438,11 +551,11 @@ export default {
           network.selectNodes([nodeId]);
           let selectedIndex = network.getSelectedNodes()[0]
           console.log(this.nodesArray[selectedIndex])
-          if(this.nodesArray[selectedIndex]=="actor"){
-            // 演员，继续扩展
+          if(this.nodesArray[selectedIndex].type=="actor"){
+            return;
           }
-          else if(this.nodesArray[selectedIndex]=="movie"){
-            // 电影，不再扩展
+          else if(this.nodesArray[selectedIndex].type=="movie"){
+            this.dialogVisible=true;
             return;
           }
         }
