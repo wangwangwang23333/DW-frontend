@@ -225,6 +225,15 @@
                     <el-form-item label="上映时间">
                       <span>{{ props.row.time }}</span>
                     </el-form-item>
+                    <el-form-item label="导演" v-if="props.row.director.length!=0">
+                      <span v-for="i in props.row.director">{{i}}, </span>
+                    </el-form-item>
+                    <el-form-item label="主演" v-if="props.row.mainActor.length!=0">
+                      <span v-for="i in props.row.mainActor">{{i}}, </span>
+                    </el-form-item>
+                    <el-form-item label="演员" v-if="props.row.actor.length!=0">
+                      <span v-for="i in props.row.actor">{{i}}, </span>
+                    </el-form-item>
                     <el-form-item label="评分">
                       <span>{{ props.row.score }}</span>
                     </el-form-item>
@@ -811,8 +820,45 @@ export default {
             movieTime += movieList[i].day+"日"
           }
           newMovie.time=movieTime
+
           this.movieData.push(newMovie)
         }
+
+        // 发送api获取导演信息、主演信息、演员信息
+        for(let i=0;i<this.movieData.length;++i){
+          console.log(this.movieData[i].asin)
+          axios({
+            method: 'get',
+            url: this.BASE_URL + '/mysql/association/movie/director',
+            params:{"movieAsin":this.movieData[i].asin, "index": i},
+            headers: {}
+          })
+          .then(response => {
+            console.log("导演信息为",response.data)
+            this.movieData[response.data.index].director=response.data.director
+          })
+          axios({
+            method: 'get',
+            url: this.BASE_URL + '/mysql/association/movie/mainActor',
+            params:{"movieAsin":this.movieData[i].asin, "index": i},
+            headers: {}
+          })
+          .then(response => {
+            this.movieData[response.data.index].mainActor=response.data.mainActor
+          })
+          axios({
+            method: 'get',
+            url: this.BASE_URL + '/mysql/association/movie/actor',
+            params:{"movieAsin":this.movieData[i].asin, "index": i},
+            headers: {}
+          })
+          .then(response => {
+            this.movieData[response.data.index].actor=response.data.actor
+          })
+        }
+
+
+        
       })
       .catch(error=> {
         console.log(error)
