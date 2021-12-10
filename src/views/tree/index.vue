@@ -36,11 +36,8 @@
       <el-col :span="10">
         <el-tabs v-model="activeName" @tab-click="handleClick">
           <el-tab-pane label="查询结果" name="first">
-            用户管理
+            {{searchResult}}
 
-          </el-tab-pane>
-          <el-tab-pane label="数据血缘" name="second">
-            配置管理
           </el-tab-pane>
           <el-tab-pane label="速度对比" name="third" :disabled="!hasResult">
 
@@ -61,7 +58,8 @@
       v-loading="loading"  
       element-loading-text="正在搜索中"
       element-loading-background="rgba(0, 0, 0, 0.1)"
-      style="height:50vh; background: linear-gradient(to bottom, #536976, #292E49);" :span="24"
+      style="height:50vh; 
+      background: linear-gradient(to bottom, #536976, #292E49);z-index:10;" :span="24"
     >
     <el-image 
     :src="require('@/assets/finderBlank.png')"
@@ -86,6 +84,7 @@ export default {
     return {
       hasResult:false,
       loading:false,
+      searchResult:'',
       // 速度比较图
       vchartsConfig: {
         setting:{

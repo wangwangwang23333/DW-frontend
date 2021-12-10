@@ -234,7 +234,7 @@
                     <el-form-item label="演员" v-if="props.row.actor.length!=0">
                       <span v-for="i in props.row.actor">{{i}}, </span>
                     </el-form-item>
-                    <el-form-item label="评分">
+                    <el-form-item label="评分" >
                       <span>{{ props.row.score }}</span>
                     </el-form-item>
                     <el-form-item label="评论数量">
@@ -247,24 +247,9 @@
               </el-table-column>
               <el-table-column prop="title" label="名称" width="250">
               </el-table-column>
-              <!-- <el-table-column
-                            prop="edition"
-                            label="版本">
-                          </el-table-column>
-                          <el-table-column
-                            prop="format"
-                            label="格式">
-                          </el-table-column> -->
               <el-table-column prop="time" label="上映时间">
               </el-table-column>
-              <!-- <el-table-column
-                            prop="score"
-                            label="评分">
-                          </el-table-column>
-                          <el-table-column
-                            prop="commentNum"
-                            label="评论总数">
-                          </el-table-column> -->
+
             </el-table>
 
           </el-tab-pane>
@@ -294,12 +279,19 @@
         </p>
       </el-col>
       
-      <el-col :span="5" style="text-align: center;">
-        <el-button :disabled="!hasResult">
+      <el-col :span="3" style="text-align: center;">
+        <el-button :disabled="!hasResult || movieData.length==0"
+         @click="downloadFile()">
           导出csv
         </el-button>
       </el-col>
-      <el-col :span="5" style="text-align: center;">
+      <el-col :span="3" style="text-align: center;">
+        <el-button :disabled="movieData.length==0"
+         @click="clearResult()">
+          清空数据
+        </el-button>
+      </el-col>
+      <el-col :span="3" style="text-align: center;">
         <el-button  type="primary" plain>
           范例测试
         </el-button>
@@ -678,6 +670,84 @@ export default {
     handleClick(tab, event) {
       console.log(tab, event);
     },
+
+    movieDataToString(data) {
+      if (data.length == 0) {
+        return ""
+      }
+      var temp = "asin,title,edition,format,time,director,mainActor,actor,score,commentNum\n"
+      for (let j = 0; j < data.length; j++) {
+        let i = data[j]
+        temp += i.asin + ','
+        temp += i.title + ','
+        if (i.hasOwnProperty("edition")){
+          temp+=i.edition+','
+        }
+        else{
+          temp+=','
+        }
+        
+        if (i.hasOwnProperty("format")){
+          temp+=i.format+','
+        }
+        else{
+          temp+=','
+        }
+        if (i.hasOwnProperty("time")){
+          temp+=i.time+','
+        }
+        else{
+          temp+=','
+        }
+        if (i.director.length!=0){
+          temp+=String(i.director)+','
+        }
+        else{
+          temp+=','
+        }
+        if (i.mainActor.length!=0){
+          temp+=String(i.mainActor)+','
+        }
+        else{
+          temp+=','
+        }
+        if (i.actor.length!=0){
+          temp+=String(i.actor)+','
+        }
+        else{
+          temp+=','
+        }
+        if (i.hasOwnProperty("score")){
+          temp+=i.score+','
+        }
+        else{
+          temp+=','
+        }
+        if (i.hasOwnProperty("commentNum")){
+          temp+=i.commentNum+','
+        }
+        else{
+          temp+=','
+        }
+        temp += '\n'
+      }
+      return temp;
+    },
+
+    downloadFile(){
+      var blob = new Blob([this.movieDataToString(this.movieData)], {type: '.csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel'});
+      console.log(blob);
+      const url3 = window.URL.createObjectURL(blob);
+      console.log(url3);
+      var filename = this.searchText + '.csv';
+      const link = document.createElement('a');
+      link.style.display = 'none';
+      link.href = url3;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+    },
+
     searchMovie(){
       Date.prototype.format = function(format)
         {
@@ -848,6 +918,7 @@ export default {
             headers: {}
           })
           .then(response => {
+            console.log(response.data)
             this.movieData[response.data.index].mainActor=response.data.mainActor
           })
           axios({
@@ -875,6 +946,8 @@ export default {
 
     clearResult(){
       this.movieData.splice(0,this.movieData.length)
+      this.hasResult=false
+      this.movieLoading=false
       for(let i=0;i<3;++i){
         this.chartData.rows[i].speed=0
       }
