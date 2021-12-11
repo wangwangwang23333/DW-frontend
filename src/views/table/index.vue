@@ -1,22 +1,22 @@
 
 <template>
   <div class="app-container">
-    <el-row >
+    <el-row>
       <el-col :span="12">
         <el-form ref="form" :model="form" label-width="120px" style="padding-top: 10vh;">
-          <el-form-item label="电影名称" >
+          <el-form-item label="电影名称">
             <el-autocomplete
               v-model="form.name"
               :fetch-suggestions="movieSearchSuggest"
               placeholder="请输入内容"
-              @select="handleSelect"
               style="width: 20vw;"
               clearable
-            ></el-autocomplete>
+              @select="handleSelect"
+            />
 
           </el-form-item>
 
-          <el-row >
+          <el-row>
             <el-col :span="13">
               <el-form-item label="电影类别">
                 <el-select
@@ -26,13 +26,14 @@
                   clearable
                   placeholder="请选择电影类别"
                   :remote-method="categoryRemoteSearch"
-                  :loading="categoryLoading">
+                  :loading="categoryLoading"
+                >
                   <el-option
                     v-for="item in movieCategory"
                     :key="item.value"
                     :label="item.value"
-                    :value="item.value">
-                  </el-option>
+                    :value="item.value"
+                  />
                 </el-select>
                 <!-- <el-select v-model="form.category" placeholder="请选择电影类别">
                   <el-option label="Zone one" value="shanghai" />
@@ -42,41 +43,48 @@
             </el-col>
             <el-col :span="16">
               <el-form-item label="上映时间">
-                <el-date-picker v-model="form.movieDate" type="daterange" align="right" unlink-panels range-separator="至"
-                    start-placeholder="开始日期" end-placeholder="结束日期"
-                    :picker-options="pickerOptions"
-                    style="width: 80%;">
-                  </el-date-picker>
+                <el-date-picker
+                  v-model="form.movieDate"
+                  type="daterange"
+                  align="right"
+                  unlink-panels
+                  range-separator="至"
+                  start-placeholder="开始日期"
+                  end-placeholder="结束日期"
+                  :picker-options="pickerOptions"
+                  style="width: 80%;"
+                />
               </el-form-item>
             </el-col>
           </el-row>
           <el-form-item label="导演">
             <el-tag
-              :key="tag"
               v-for="(tag,index) in form.movieDirectors"
+              :key="tag"
               closable
               effect="dark"
               :disable-transitions="false"
               :color="labelColor[index%labelColor.length]"
               style="color: white;"
               :hit="true"
-              @close="handleDirectorTagClose(tag)">
-              {{tag}}
+              @close="handleDirectorTagClose(tag)"
+            >
+              {{ tag }}
             </el-tag>
             <el-autocomplete
-              class="input-new-tag"
               v-if="directorInputVisible"
-              v-model="directorInputValue"
               ref="saveDirectorTagInput"
+              v-model="directorInputValue"
+              class="input-new-tag"
               size="small"
-              @keyup.enter.native="handleDirectorInputConfirm(true)"
-
               :fetch-suggestions="directorSearchSuggest"
+
               placeholder="请输入内容"
-              @select="handleDirectorSelect"
               style="width: 20vw;"
               clearable
-            ></el-autocomplete>
+              @keyup.enter.native="handleDirectorInputConfirm(true)"
+              @select="handleDirectorSelect"
+            />
             <!-- <el-input
                 class="input-new-tag"
                 v-if="directorInputVisible"
@@ -86,38 +94,43 @@
                 @keyup.enter.native="handleDirectorInputConfirm"
                 @blur="handleDirectorInputConfirm"
               > -->
-              </el-input>
-              <el-button v-if="!directorInputVisible && form.movieDirectors.length<5" class="button-new-tag" size="small"
-              @click="showDirectorInput()">
-                添加导演
-              </el-button>
+
+            <el-button
+              v-if="!directorInputVisible && form.movieDirectors.length<5"
+              class="button-new-tag"
+              size="small"
+              @click="showDirectorInput()"
+            >
+              添加导演
+            </el-button>
           </el-form-item>
           <el-form-item label="主演">
             <el-tag
-              :key="tag"
               v-for="(tag,index) in form.movieMainActors"
+              :key="tag"
               closable
               effect="dark"
               :disable-transitions="false"
               :color="labelColor[index%labelColor.length]"
               style="color: white;"
               :hit="true"
-              @close="handleMainActorTagClose(tag)">
-              {{tag}}
+              @close="handleMainActorTagClose(tag)"
+            >
+              {{ tag }}
             </el-tag>
             <el-autocomplete
-            class="input-new-tag"
-            v-if="mainActorInputVisible"
-            v-model="mainActorInputValue"
-            ref="saveMainActorTagInput"
-            size="small"
-            @keyup.enter.native="handleMainActorInputConfirm"
-            :fetch-suggestions="actorSearchSuggest"
-            placeholder="请输入内容"
-            @select="handleMainActorSelect"
-            style="width: 20vw;"
-            clearable
-          ></el-autocomplete>
+              v-if="mainActorInputVisible"
+              ref="saveMainActorTagInput"
+              v-model="mainActorInputValue"
+              class="input-new-tag"
+              size="small"
+              :fetch-suggestions="actorSearchSuggest"
+              placeholder="请输入内容"
+              style="width: 20vw;"
+              clearable
+              @keyup.enter.native="handleMainActorInputConfirm"
+              @select="handleMainActorSelect"
+            />
             <!-- <el-input
                 class="input-new-tag"
                 v-if="mainActorInputVisible"
@@ -128,38 +141,43 @@
                 @blur="handleMainActorInputConfirm"
               >
               </el-input> -->
-              <el-button v-if="!mainActorInputVisible && form.movieMainActors.length<5" class="button-new-tag" size="small"
-              @click="showMainActorInput()">
-                添加主演
-              </el-button>
+            <el-button
+              v-if="!mainActorInputVisible && form.movieMainActors.length<5"
+              class="button-new-tag"
+              size="small"
+              @click="showMainActorInput()"
+            >
+              添加主演
+            </el-button>
           </el-form-item>
 
           <el-form-item label="演员">
             <el-tag
-              :key="tag"
               v-for="(tag,index) in form.movieActors"
+              :key="tag"
               closable
               effect="dark"
               :disable-transitions="false"
               :color="labelColor[index%labelColor.length]"
               style="color: white;"
               :hit="true"
-              @close="handleActorTagClose(tag)">
-              {{tag}}
+              @close="handleActorTagClose(tag)"
+            >
+              {{ tag }}
             </el-tag>
             <el-autocomplete
-            class="input-new-tag"
-            v-if="actorInputVisible"
-            v-model="actorInputValue"
-            ref="saveActorTagInput"
-            size="small"
-            @keyup.enter.native="handleActorInputConfirm"
-            :fetch-suggestions="actorSearchSuggest"
-            placeholder="请输入内容"
-            @select="handleActorSelect"
-            style="width: 20vw;"
-            clearable
-          ></el-autocomplete>
+              v-if="actorInputVisible"
+              ref="saveActorTagInput"
+              v-model="actorInputValue"
+              class="input-new-tag"
+              size="small"
+              :fetch-suggestions="actorSearchSuggest"
+              placeholder="请输入内容"
+              style="width: 20vw;"
+              clearable
+              @keyup.enter.native="handleActorInputConfirm"
+              @select="handleActorSelect"
+            />
             <!-- <el-input
                 class="input-new-tag"
                 v-if="actorInputVisible"
@@ -170,20 +188,34 @@
                 @blur="handleActorInputConfirm"
               >
               </el-input> -->
-              <el-button v-if="!actorInputVisible && form.movieActors.length<5" class="button-new-tag" size="small"
-              @click="showActorInput()">
-                添加演员
-              </el-button>
+            <el-button
+              v-if="!actorInputVisible && form.movieActors.length<5"
+              class="button-new-tag"
+              size="small"
+              @click="showActorInput()"
+            >
+              添加演员
+            </el-button>
           </el-form-item>
 
           <el-form-item label="评分">
             <el-input-number
-            size="mini"
-            v-model="form.movieMinScore" :precision="2" :step="0.01" :max="form.movieMaxScore" :min="0" />
-             至
+              v-model="form.movieMinScore"
+              size="mini"
+              :precision="2"
+              :step="0.01"
+              :max="form.movieMaxScore"
+              :min="0"
+            />
+            至
             <el-input-number
-            size="mini"
-            v-model="form.movieMaxScore" :precision="2" :step="0.01" :max="5" :min="form.movieMinScore" />
+              v-model="form.movieMaxScore"
+              size="mini"
+              :precision="2"
+              :step="0.01"
+              :max="5"
+              :min="form.movieMinScore"
+            />
           </el-form-item>
 
           <el-form-item>
@@ -193,13 +225,13 @@
         </el-form>
       </el-col>
       <el-col :span="1">
-        <el-divider direction="vertical"></el-divider>
+        <el-divider direction="vertical" />
       </el-col>
       <el-col :span="10">
         <el-tabs v-model="activeName" @tab-click="handleClick">
           <el-tab-pane label="查询结果" name="first">
             <p v-if="hasResult ">
-              共有{{movieNumber}}个结果
+              共有{{ movieNumber }}个结果
             </p>
             <el-table v-loading="movieLoading" height="460" border stripe :data="movieData" style="width: 100%">
               <el-table-column type="expand">
@@ -225,16 +257,16 @@
                     <el-form-item label="上映时间">
                       <span>{{ props.row.time }}</span>
                     </el-form-item>
-                    <el-form-item label="导演" v-if="props.row.director.length!=0">
-                      <span v-for="i in props.row.director">{{i}}, </span>
+                    <el-form-item v-if="props.row.director.length!==0" label="导演">
+                      <span v-for="i in props.row.director">{{ i }}, </span>
                     </el-form-item>
-                    <el-form-item label="主演" v-if="props.row.mainActor.length!=0">
-                      <span v-for="i in props.row.mainActor">{{i}}, </span>
+                    <el-form-item v-if="props.row.mainActor.length!==0" label="主演">
+                      <span v-for="i in props.row.mainActor">{{ i }}, </span>
                     </el-form-item>
-                    <el-form-item label="演员" v-if="props.row.actor.length!=0">
-                      <span v-for="i in props.row.actor">{{i}}, </span>
+                    <el-form-item v-if="props.row.actor.length!==0" label="演员">
+                      <span v-for="i in props.row.actor">{{ i }}, </span>
                     </el-form-item>
-                    <el-form-item label="评分" >
+                    <el-form-item label="评分">
                       <span>{{ props.row.score }}</span>
                     </el-form-item>
                     <el-form-item label="评论数量">
@@ -243,12 +275,9 @@
                   </el-form>
                 </template>
               </el-table-column>
-              <el-table-column prop="asin" label="编号" width="120">
-              </el-table-column>
-              <el-table-column prop="title" label="名称" width="250">
-              </el-table-column>
-              <el-table-column prop="time" label="上映时间">
-              </el-table-column>
+              <el-table-column prop="asin" label="编号" width="120" />
+              <el-table-column prop="title" label="名称" width="250" />
+              <el-table-column prop="time" label="上映时间" />
 
             </el-table>
 
@@ -264,35 +293,38 @@
               :settings="vchartsConfig.setting"
               :extend="vchartsConfig.extend"
               width="38vw"
-            ></ve-histogram>
+            />
           </el-tab-pane>
-       </el-tabs>
-
+        </el-tabs>
 
       </el-col>
     </el-row>
-    <el-divider></el-divider>
-    <el-row >
-      <el-col :span="12" >
+    <el-divider />
+    <el-row>
+      <el-col :span="12">
         <p style="margin-left: 3vw;color: #909399;font-size:8rew;font-weight: revert;">
-          {{searchText}}
+          {{ searchText }}
         </p>
       </el-col>
 
       <el-col :span="3" style="text-align: center;">
-        <el-button :disabled="!hasResult || movieData.length==0"
-         @click="downloadFile()">
+        <el-button
+          :disabled="!hasResult || movieData.length===0"
+          @click="downloadFile()"
+        >
           导出csv
         </el-button>
       </el-col>
       <el-col :span="3" style="text-align: center;">
-        <el-button :disabled="movieData.length==0"
-         @click="clearResult()">
+        <el-button
+          :disabled="movieData.length===0"
+          @click="clearResult()"
+        >
           清空数据
         </el-button>
       </el-col>
       <el-col :span="3" style="text-align: center;">
-        <el-button  type="primary" plain>
+        <el-button type="primary" plain>
           范例测试
         </el-button>
       </el-col>
@@ -301,7 +333,7 @@
 </template>
 
 <script>
-import "echarts/lib/component/title";
+import 'echarts/lib/component/title'
 /* eslint-disable */
 export default {
   filters: {
@@ -419,9 +451,7 @@ export default {
               show:false,
             },
             // 坐标轴刻度
-            axisTick:{
-              show:false,
-            },
+
             // 坐标轴每项的文字
             axisLabel:{
               showMaxLabel:true,
