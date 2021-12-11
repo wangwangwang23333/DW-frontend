@@ -13,9 +13,9 @@
               style="width: 20vw;"
               clearable
             ></el-autocomplete>
-            
+
           </el-form-item>
-    
+
           <el-row >
             <el-col :span="13">
               <el-form-item label="电影类别">
@@ -43,7 +43,7 @@
             <el-col :span="16">
               <el-form-item label="上映时间">
                 <el-date-picker v-model="form.movieDate" type="daterange" align="right" unlink-panels range-separator="至"
-                    start-placeholder="开始日期" end-placeholder="结束日期" 
+                    start-placeholder="开始日期" end-placeholder="结束日期"
                     :picker-options="pickerOptions"
                     style="width: 80%;">
                   </el-date-picker>
@@ -70,7 +70,7 @@
               ref="saveDirectorTagInput"
               size="small"
               @keyup.enter.native="handleDirectorInputConfirm(true)"
-              
+
               :fetch-suggestions="directorSearchSuggest"
               placeholder="请输入内容"
               @select="handleDirectorSelect"
@@ -87,7 +87,7 @@
                 @blur="handleDirectorInputConfirm"
               > -->
               </el-input>
-              <el-button v-if="!directorInputVisible && form.movieDirectors.length<5" class="button-new-tag" size="small" 
+              <el-button v-if="!directorInputVisible && form.movieDirectors.length<5" class="button-new-tag" size="small"
               @click="showDirectorInput()">
                 添加导演
               </el-button>
@@ -128,7 +128,7 @@
                 @blur="handleMainActorInputConfirm"
               >
               </el-input> -->
-              <el-button v-if="!mainActorInputVisible && form.movieMainActors.length<5" class="button-new-tag" size="small" 
+              <el-button v-if="!mainActorInputVisible && form.movieMainActors.length<5" class="button-new-tag" size="small"
               @click="showMainActorInput()">
                 添加主演
               </el-button>
@@ -170,22 +170,22 @@
                 @blur="handleActorInputConfirm"
               >
               </el-input> -->
-              <el-button v-if="!actorInputVisible && form.movieActors.length<5" class="button-new-tag" size="small" 
+              <el-button v-if="!actorInputVisible && form.movieActors.length<5" class="button-new-tag" size="small"
               @click="showActorInput()">
                 添加演员
               </el-button>
           </el-form-item>
-          
+
           <el-form-item label="评分">
-            <el-input-number 
+            <el-input-number
             size="mini"
             v-model="form.movieMinScore" :precision="2" :step="0.01" :max="form.movieMaxScore" :min="0" />
-             至 
-            <el-input-number 
+             至
+            <el-input-number
             size="mini"
             v-model="form.movieMaxScore" :precision="2" :step="0.01" :max="5" :min="form.movieMinScore" />
           </el-form-item>
-          
+
           <el-form-item>
             <el-button type="primary" @click="searchMovie">查询</el-button>
             <el-button @click="onCancel">取消</el-button>
@@ -264,11 +264,11 @@
               :settings="vchartsConfig.setting"
               :extend="vchartsConfig.extend"
               width="38vw"
-            ></ve-histogram>  
+            ></ve-histogram>
           </el-tab-pane>
        </el-tabs>
 
-       
+
       </el-col>
     </el-row>
     <el-divider></el-divider>
@@ -278,7 +278,7 @@
           {{searchText}}
         </p>
       </el-col>
-      
+
       <el-col :span="3" style="text-align: center;">
         <el-button :disabled="!hasResult || movieData.length==0"
          @click="downloadFile()">
@@ -305,7 +305,7 @@ import "echarts/lib/component/title";
 /* eslint-disable */
 export default {
   filters: {
-  
+
   },
   data() {
     return {
@@ -325,7 +325,7 @@ export default {
         movieMinScore:0,
         movieMaxScore:5.0,
         movieDate:[],
-        
+
       },
       movieLoading:false,
       labelColor:["#77C9D4","#57BC90","#015249"],
@@ -386,7 +386,7 @@ export default {
           },
         ]
       },
-      
+
       // 速度比较图
       vchartsConfig: {
         setting:{
@@ -478,9 +478,9 @@ export default {
                 return v+' ms'
             },
             },
-            
+
           },
-          
+
           // 滚动组件参数
           dataZoom:[
             {
@@ -527,7 +527,7 @@ export default {
           { "type":"图数据库","software": "neo4j", "speed": 0 },
         ],
       },
-      
+
       directorInputVisible:false,
       directorInputValue:'',
       mainActorInputVisible:false,
@@ -545,7 +545,7 @@ export default {
       }
   },
   created() {
-    
+
   },
   methods: {
     onCancel() {
@@ -645,7 +645,7 @@ export default {
         this.$message.error('当前网络异常，请稍后再试');
       });
     },
-    
+
     categoryRemoteSearch(query){
 
       this.categoryLoading = true;
@@ -658,7 +658,7 @@ export default {
         params:{"category":query},
         headers: { }
       };
-      
+
       // 向mysql 发送请求
       axios(config)
       .then(response=> {
@@ -669,7 +669,7 @@ export default {
           }
           result.push({"value":response.data[i]})
         }
-        
+
         this.movieCategory=result;
         this.categoryLoading=false;
       })
@@ -696,7 +696,7 @@ export default {
         else{
           temp+=','
         }
-        
+
         if (i.hasOwnProperty("format")){
           temp+=i.format+','
         }
@@ -757,7 +757,7 @@ export default {
     },
 
     searchMovie(){
-      
+
       // 清空上一轮查询结果
       this.clearResult();
 
@@ -843,7 +843,7 @@ export default {
       }
       // 设置参数
       console.log("搜索条件为",searchCondition)
-   
+
       if(Object.keys(searchCondition).length==0){
         this.$message({
           message: '请至少给出一个条件！',
@@ -855,7 +855,7 @@ export default {
       this.searchText=searchText
       this.vchartsConfig.extend.title.subtext=searchText
 
-      
+
 
       // 发送api
       var axios = require('axios');
@@ -867,6 +867,16 @@ export default {
         headers: { }
       };
       this.movieLoading=true;
+
+      // 向mysql发送请求，填入请求时间即可
+      axios({
+        method: 'post',
+        url: this.BASE_URL+'/mysql/association/movie/result',
+        data:searchCondition,
+        headers: { }
+      }).then(response=>{
+        this.chartData.rows[0].speed = response.data.time
+      })
 
       // 向neo4j 发送请求
       axios(config)
@@ -940,7 +950,7 @@ export default {
         }
 
 
-        
+
       })
       .catch(error=> {
         this.$message.error('当前网络异常，请稍后再试');
@@ -958,11 +968,11 @@ export default {
         this.chartData.rows[i].speed=0
       }
       this.searchText="暂无查询"
-      
+
     },
 
     /**
-     * 下面是处理标签的函数 
+     * 下面是处理标签的函数
      **/
     showDirectorInput() {
       this.directorInputVisible = true;
@@ -970,7 +980,7 @@ export default {
         this.$refs.saveDirectorTagInput.$refs.input.focus();
       });
     },
-    
+
     handleDirectorInputConfirm(showMessage) {
       let inputValue = this.directorInputValue
       // 有效性判断
@@ -985,7 +995,7 @@ export default {
           })
           this.directorInputVisible=false;
         }
-        
+
         return;
       }
       this.form.movieDirectors.push(inputValue.replace(/^\s*|\s*$/g,""));
