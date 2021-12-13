@@ -8,9 +8,24 @@
       @close="dialogVisible=false;"
     >
       <div>
-        <p>Species:</p>
-        <p>Name:</p>
-        <p>Id:</p>
+        <p>asin:{{dialogData.asin}}</p>
+        
+        <p>电影名:{{dialogData.name}}</p>
+        <p v-if="dialogData.director.length!==0" >
+          导演：
+          <span v-for="i in dialogData.director">{{ i }}, </span>
+        </p>
+        <p v-if="dialogData.mainActor.length!==0" >
+          主演：
+          <span v-for="i in dialogData.mainActor">{{ i }}, </span>
+        </p>
+        <p v-if="dialogData.actor.length!==0" >
+          演员：
+          <span v-for="i in dialogData.actor">{{ i }}, </span>
+        </p>
+        <p>评分:{{dialogData.score}}</p>
+        <p>评论总数:{{dialogData.commentNum}}</p>
+        
       </div>
       <div slot="footer">
         <el-button type="primary" @click="viewOriginWeb()">查看原始网页</el-button>
@@ -35,7 +50,7 @@
       </el-col>
       <el-col :span="10">
         <el-tabs v-model="activeName" @tab-click="handleClick">
-          <el-tab-pane label="查询结果" name="first">
+          <el-tab-pane label="查询结果" name="first" v-loading="loading">
             {{ searchResult }}
 
           </el-tab-pane>
@@ -48,6 +63,7 @@
               :extend="vchartsConfig.extend"
               width="38vw"
               height = "50vh"
+              v-loading="loading"
             />
           </el-tab-pane>
         </el-tabs>
@@ -88,7 +104,7 @@ export default {
     return {
       hasResult: false,
       loading: false,
-      searchResult: '',
+      searchResult: '暂无查询',
       // 速度比较图
       vchartsConfig: {
         setting: {
@@ -334,6 +350,15 @@ export default {
       visData: {},
 
       dialogVisible: false,
+      dialogData:{
+        asin:'',
+        name:'',
+        director:[],
+        actor:[],
+        mainActor:[],
+        score:'',
+        commentNum:0,
+      },
 
       personColor: {
         background: '#f57797',
@@ -432,10 +457,13 @@ export default {
               for (let i = 0; i < movieList.length; ++i) {
                 const newNode = {
                   id: i + 2,
-                  label: movieList[i].substring(0, 4) + '...',
+                  label: movieList[i].name.substring(0, 4) + '...',
                   color: this.movieColor,
                   type: 'movie',
-                  movieName: movieList[i]
+                  movieName: movieList[i].name,
+                  movieAsin: movieList[i].asin,
+                  score:movieList[i].score,
+                  commentNum:movieList[i].commentNum,
                 }
                 this.nodes.add(newNode)
                 this.nodesArray.push(newNode)
@@ -512,10 +540,13 @@ export default {
               for (let i = 0; i < movieList.length; ++i) {
                 const newNode = {
                   id: i + 2,
-                  label: movieList[i].substring(0, 4) + '...',
+                  label: movieList[i].name.substring(0, 4) + '...',
                   color: this.movieColor,
                   type: 'movie',
-                  movieName: movieList[i]
+                  movieName: movieList[i].name,
+                  movieAsin: movieList[i].asin,
+                  score:movieList[i].score,
+                  commentNum:movieList[i].commentNum,
                 }
                 this.nodes.add(newNode)
                 this.nodesArray.push(newNode)
@@ -571,6 +602,39 @@ export default {
             // eslint-disable-next-line eqeqeq
           } else if (this.nodesArray[selectedIndex].type === 'movie') {
             this.dialogVisible = true
+            this.dialogData.asin=this.nodesArray[selectedIndex].movieAsin
+            this.dialogData.name=this.nodesArray[selectedIndex].movieName
+            this.dialogData.score=this.nodesArray[selectedIndex].score
+            this.dialogData.commentNum=this.nodesArray[selectedIndex].commentNum
+            // 根据asin获取详细信息(主演、演员和导演)
+            var axios = require('axios');
+            axios({
+              method: 'get',
+              url: BASE_URL + '/mysql/association/movie/director',
+              params:{"movieAsin":this.dialogData.asin, "index": 0},
+              headers: {}
+            })
+            .then(response => {
+              this.dialogData.director=response.data.director
+            })
+            axios({
+              method: 'get',
+              url: BASE_URL + '/mysql/association/movie/mainActor',
+              params:{"movieAsin":this.dialogData.asin, "index": 0},
+              headers: {}
+            })
+            .then(response => {
+              this.dialogData.mainActor=response.data.mainActor
+            })
+            axios({
+              method: 'get',
+              url: BASE_URL + '/mysql/association/movie/actor',
+              params:{"movieAsin":this.dialogData.asin, "index": 0},
+              headers: {}
+            })
+            .then(response => {
+              this.dialogData.actor=response.data.actor
+            })
             return
           }
         }

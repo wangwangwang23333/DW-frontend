@@ -324,7 +324,7 @@
         </el-button>
       </el-col>
       <el-col :span="3" style="text-align: center;">
-        <el-button type="primary" plain>
+        <el-button type="primary" plain @click="exampleTest()">
           范例测试
         </el-button>
       </el-col>
@@ -1089,6 +1089,11 @@ export default {
     },
     handleActorTagClose(tag) {
       this.form.movieActors.splice(this.form.movieActors.indexOf(tag), 1);
+    },
+    exampleTest(){
+      this.form.category='Comedy';
+      this.form.movieMinScore=2.5;
+      this.searchMovie();
     },
   }
 }
