@@ -198,6 +198,16 @@
             </el-button>
           </el-form-item>
 
+          <el-form-item label="正面评价">
+            <el-progress type="dashboard" size="mini" :percentage="form.positive" :color="percentageColors"></el-progress>
+              <div>
+                <el-button-group>
+                  <el-button icon="el-icon-minus" size="mini" @click="decrease"></el-button>
+                  <el-button icon="el-icon-plus" size="mini" @click="increase"></el-button>
+                </el-button-group>
+            </div>
+          </el-form-item>
+
           <el-form-item label="评分">
             <el-input-number
               v-model="form.movieMinScore"
@@ -217,6 +227,8 @@
               :min="form.movieMinScore"
             />
           </el-form-item>
+
+          
 
           <el-form-item>
             <el-button type="primary" @click="searchMovie">查询</el-button>
@@ -256,6 +268,12 @@
                     </el-form-item>
                     <el-form-item label="上映时间">
                       <span>{{ props.row.time }}</span>
+                    </el-form-item>
+                    <el-form-item label="正面评价">
+                      <span>{{ props.row.positive }}</span>
+                    </el-form-item>
+                    <el-form-item label="负面评价">
+                      <span>{{ props.row.negative }}</span>
                     </el-form-item>
                     <el-form-item v-if="props.row.director.length!==0" label="导演">
                       <span v-for="i in props.row.director">{{ i }}, </span>
@@ -357,8 +375,15 @@ export default {
         movieMinScore:0,
         movieMaxScore:5.0,
         movieDate:[],
-
+        positive:0,
       },
+      percentageColors: [
+          {color: '#f56c6c', percentage: 20},
+          {color: '#e6a23c', percentage: 40},
+          {color: '#5cb87a', percentage: 60},
+          {color: '#1989fa', percentage: 80},
+          {color: '#6f7ad3', percentage: 100}
+        ],
       movieLoading:false,
       labelColor:["#77C9D4","#57BC90","#015249"],
       pickerOptions: {
@@ -711,6 +736,13 @@ export default {
       console.log(tab, event);
     },
 
+    decrease(){
+      this.form.positive=this.form.positive>0?this.form.positive-1:this.form.positive
+    },
+    increase(){
+      this.form.positive=this.form.positive<100?this.form.positive+1:this.form.positive
+    },
+
     movieDataToString(data) {
       if (data.length == 0) {
         return ""
@@ -871,6 +903,11 @@ export default {
         searchCondition.maxScore=this.form.movieMaxScore
         searchText+=" 评分在"+searchCondition.minScore+"到"+searchCondition.maxScore+"之间"
       }
+
+      if(this.form.positive!=0){
+        searchCondition.positive=this.form.positive
+        searchText+=" 正面评价在"+searchCondition.positive+"之上"
+      }
       // 设置参数
       console.log("搜索条件为",searchCondition)
 
@@ -930,6 +967,12 @@ export default {
           }
           if (movieList[i].hasOwnProperty("commentNum")) {
             newMovie.commentNum = movieList[i].commentNum
+          }
+          if (movieList[i].hasOwnProperty("positive")) {
+            newMovie.positive = movieList[i].positive
+          }
+          if (movieList[i].hasOwnProperty("negative")) {
+            newMovie.negative = movieList[i].negative
           }
           var movieTime=""
           if (movieList[i].hasOwnProperty("year")) {
