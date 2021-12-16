@@ -202,8 +202,7 @@
             <el-progress type="dashboard" size="mini" :percentage="form.positive" :color="percentageColors"></el-progress>
               <div>
                 <el-button-group>
-                  <el-button icon="el-icon-minus" size="mini" @click="decrease"></el-button>
-                  <el-button icon="el-icon-plus" size="mini" @click="increase"></el-button>
+                  <el-input-number v-model="form.positive"  :min="0" :max="100" size="mini"></el-input-number>
                 </el-button-group>
             </div>
           </el-form-item>
