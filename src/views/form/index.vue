@@ -4,25 +4,36 @@
     <el-divider></el-divider>
     <el-table
       v-loading="loading"
+      @row-click="clickRowForConflictMovie"
       element-loading-text="拼命加载中"
       :data="tableData"
       style="width: 100%"
       border
       :stripe="true">
       <el-table-column v-for="(item,index) in tableHeader" 
-      :label="item.label" :property="item.property" :key="index" align="center"></el-table-column>
+      :label="item.label" :property="item.property" :key="index" align="center" ></el-table-column>
     </el-table>
     <div class="block">
-    <el-pagination style="text-align: center"
-      @current-change="handleCurrentChange"
-      @prev-click="handlePrevClick"
-      @next-click="handleNextClick"
-      :current-page.sync="currentPage"
-      :page-size="pageSize"
-      :page-count="totalPage - 1"
-      layout="prev, pager, next, jumper">
-    </el-pagination>
-  </div>
+      <el-pagination style="text-align: center"
+        @current-change="handleCurrentChange"
+        @prev-click="handlePrevClick"
+        @next-click="handleNextClick"
+        :current-page.sync="currentPage"
+        :page-size="pageSize"
+        :page-count="totalPage - 1"
+        layout="prev, pager, next, jumper">
+      </el-pagination>
+    </div>
+    <el-dialog title="电影溯源信息" :visible.sync="dialogFlag">
+      <div style="text-align: center; font-size: xx-large; margin-bottom: 8px">{{dialogData.movieTitle}}</div>
+      <div style="text-align: center; margin-bottom: 8px;">共合并 <span style="font-size: x-large">{{dialogData.versionCount}}</span> 个版本数量的电影,点击表格每一行可访问源网址</div>
+      <div style="text-align: center">该电影版本信息来源评论数量共 <span style="font-size: x-large">{{dialogData.commentCount}}</span> 条</div>
+      <div style="text-align: left">以下为未合并前的电影数据信息:</div>
+      <el-table :data="dialogMovieData" element-loading-text="拼命加载中" :cell-style="cellStyle">
+        <el-table-column v-for="(item,index) in movieHeader" 
+        :label="item.label" :property="item.property" :key="index" align="center" ></el-table-column>
+      </el-table>
+    </el-dialog>
   </div>
 </template>
 
@@ -52,10 +63,15 @@ export default {
 
       totalPage: 0,
       pageSize: 6,
-      currentPage: 0,
+      currentPage: 1,
       currentName:"",
 
-      dataCount: {}
+      dataCount: {},
+
+      //dialog
+      dialogFlag: false,
+      dialogData:[],
+      dialogMovieData: [],
     }
   },
   methods: {
@@ -276,18 +292,22 @@ export default {
         ]
       }
     }
-    // 绘制图表
-    myChart.setOption(option);
-    myChart.on('click',param=>{
-      console.log(param)
-      if(this.currentPage == 0){
-        this.getData(this.currentPage,this.pageSize)
-      }
-      else{
-        this.currentPage = 0
-      }
-      this.currentName = param.data["name"]  
-    })
+      // 绘制图表
+      myChart.setOption(option);
+      console.log("初始化点击事件")
+      myChart.on("click",function(){
+        console.log("ok")
+      })
+      // myChart.on('click',param=>{
+      //   console.log(param)
+      //   if(this.currentPage == 1){
+      //     this.getData(this.currentPage - 1,this.pageSize)
+      //   }
+      //   else{
+      //     this.currentPage = 1
+      //   }
+      //   this.currentName = param.data["name"]  
+      // })
     },
     getData(currentPage,pageSize){
       
@@ -331,9 +351,48 @@ export default {
       this.currentPage = val
     },
     clickRowForConflictMovie(row, event, column){
-      if (currentName === "合并后存在冲突数据"){
+
+      if (this.currentName === "合并后存在冲突数据"){
         console.log(row["asin"]);
+        //首先调用获得冲突信息 
+        //展示dialog
+        var axios = require('axios');
+        var config = {
+          method: 'get',
+          url: 'http://localhost:8080/traceability/conflictInfo',
+          params:{"asin":row["asin"]},
+          headers: { }
+        };
+        axios(config).then(response=>{
+        
+          this.dialogData = response.data;
+          this.dialogMovieData = this.dialogData.movieList; 
+          this.dialogData["movieTitle"] = row["movieTitle"];
+          this.dialogData["movieInfo"] = row
+          this.dialogFlag = true
+        }).catch(function (error) {
+          console.log(error);
+        });
       }
+    },
+    cellStyle({row, column, rowIndex, columnIndex}){
+      //改变颜色
+      let movieInfo = this.dialogData.movieInfo
+      if(row["movieTitle"] === movieInfo["movieTitle"] && columnIndex === 1){
+        return 'color: #EA1B29';
+      }
+      else if(row["director"] === movieInfo["director"] && columnIndex === 3){
+        return 'color: #EA1B29';
+      }
+      else if(row["actor"] === movieInfo["actor"] && columnIndex === 4){
+        return 'color: #EA1B29';
+      }
+      else if(row["mainActor"] === movieInfo["mainActor"] && columnIndex === 5){
+        return 'color: #EA1B29';
+      }
+      else if(row["movieReleaseDate"] === movieInfo["movieReleaseDate"] && columnIndex === 7){
+        return 'color: #EA1B29';
+      }      
     }
   },
   created(){
@@ -342,7 +401,7 @@ export default {
   },
   watch:{
     currentPage(val,oldVal){
-      this.getData(val,this.pageSize)
+      this.getData(val-1,this.pageSize)
     }
     
   },
