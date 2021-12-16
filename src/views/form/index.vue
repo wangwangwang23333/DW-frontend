@@ -2,6 +2,11 @@
   <div class="app-container">
     <div id="myChart" style="width: 95vw;height: 50vh;"></div>
     <el-divider></el-divider>
+    <el-input
+    size="medium" placeholder="输入电影名称进行查询" suffix-icon="el-icon-edit" v-model="searchingTitle"
+    style="width:40vh; margin-bottom:10px">
+    </el-input>
+    <el-button icon="el-icon-search" circle style="margin-left:10px" @click="searchMovieByTitle"></el-button>
     <el-table
       v-loading="loading"
       @row-click="clickRowForConflictMovie"
@@ -29,7 +34,7 @@
       <div style="text-align: center; margin-bottom: 8px;">共合并 <span style="font-size: x-large">{{dialogData.versionCount}}</span> 个版本数量的电影,点击表格每一行可访问源网址</div>
       <div style="text-align: center">该电影版本信息来源评论数量共 <span style="font-size: x-large">{{dialogData.commentCount}}</span> 条</div>
       <div style="text-align: left">以下为未合并前的电影数据信息:</div>
-      <el-table :data="dialogMovieData" element-loading-text="拼命加载中" :cell-style="cellStyle">
+      <el-table :data="dialogMovieData" element-loading-text="拼命加载中" @row-click="clickForWebsite" >
         <el-table-column v-for="(item,index) in movieHeader" 
         :label="item.label" :property="item.property" :key="index" align="center" ></el-table-column>
       </el-table>
@@ -38,6 +43,7 @@
 </template>
 
 <script>
+import { title } from '@/settings';
 
 export default {
   data() {
@@ -72,6 +78,9 @@ export default {
       dialogFlag: false,
       dialogData:[],
       dialogMovieData: [],
+
+      //searching
+      searchingTitle: "",
     }
   },
   methods: {
@@ -211,6 +220,23 @@ export default {
         console.log(error);
       });
     },
+    getMovieByTitle(currentPage,pageSize,title){
+      var axios = require('axios');
+      var config = {
+      method: 'get',
+      url: 'http://localhost:8080/traceability/searchingMovie',
+      params:{'title':title, 'currentPage':currentPage, 'pageSize':pageSize},
+      headers: { }
+      };
+      axios(config).then(response=>{
+        console.log(response)
+        this.totalPage = response.data.totalPage
+        this.tableData = response.data.consolidationMovieList
+        this.loading = false
+      }).catch(function (error) {
+        console.log(error);
+      });
+    },
     createChart(){
       let myChart = this.$echarts.init(document.getElementById('myChart'))
 
@@ -298,16 +324,18 @@ export default {
 
       myChart.on('click',param=>{
         console.log(param)
+        this.currentName = param.data["name"]
+        this.searchingTitle = "" 
         if(this.currentPage == 1){
           this.getData(this.currentPage - 1,this.pageSize)
         }
         else{
           this.currentPage = 1
         }
-        this.currentName = param.data["name"]  
+ 
       })
     },
-    getData(currentPage,pageSize){
+    getData(currentPage,pageSize,title){
       
       if(this.currentName==="评论数据"){
         this.loading = true;
@@ -337,6 +365,10 @@ export default {
         this.loading = true;
         this.tableHeader = this.consolidationHeader;
         this.getNoConflictConsolidationMovie(currentPage,pageSize);
+      }else if(this.currentName === "模糊搜索"){
+        this.loading = true;
+        this.tableHeader = this.consolidationHeader;
+        this.getMovieByTitle(currentPage,pageSize,title);
       }
     },
     handleCurrentChange(val){
@@ -350,7 +382,7 @@ export default {
     },
     clickRowForConflictMovie(row, event, column){
 
-      if (this.currentName === "合并后存在冲突数据"){
+      if (this.tableHeader === this.consolidationHeader && row["asinCount"] !== 1){
         console.log(row["asin"]);
         //首先调用获得冲突信息 
         //展示dialog
@@ -372,25 +404,46 @@ export default {
           console.log(error);
         });
       }
+      else{
+        let curAsin = row["asin"]
+        window.open("https:www.amazon.com/dp/"+curAsin);
+      }
     },
-    cellStyle({row, column, rowIndex, columnIndex}){
-      //改变颜色
-      let movieInfo = this.dialogData.movieInfo
-      if(row["movieTitle"] === movieInfo["movieTitle"] && columnIndex === 1){
-        return 'color: #EA1B29';
+    // cellStyle({row, column, rowIndex, columnIndex}){
+    //   //改变颜色
+    //   let movieInfo = this.dialogData.movieInfo
+    //   if(row["movieTitle"] === movieInfo["movieTitle"] && columnIndex === 1){
+    //     return 'color: #EA1B29';
+    //   }
+    //   else if(row["director"] === movieInfo["director"] && columnIndex === 3){
+    //     return 'color: #EA1B29';
+    //   }
+    //   else if(row["actor"] === movieInfo["actor"] && columnIndex === 4){
+    //     return 'color: #EA1B29';
+    //   }
+    //   else if(row["mainActor"] === movieInfo["mainActor"] && columnIndex === 5){
+    //     return 'color: #EA1B29';
+    //   }
+    //   else if(row["movieReleaseDate"] === movieInfo["movieReleaseDate"] && columnIndex === 7){
+    //     return 'color: #EA1B29';
+    //   }      
+    // },
+    clickForWebsite(row, event, column){
+      let curAsin = row["asin"]
+      window.open("https:www.amazon.com/dp/"+curAsin);
+    },
+    searchMovieByTitle(){
+
+      if(this.searchingTitle == ""){
+        //不为空
+        return;
       }
-      else if(row["director"] === movieInfo["director"] && columnIndex === 3){
-        return 'color: #EA1B29';
+      this.currentName = "模糊搜索"      
+      if(this.currentPage == 1){
+        this.getData(this.currentPage - 1,this.pageSize, this.searchingTitle)
+      }else{
+        this.currentPage = 1;
       }
-      else if(row["actor"] === movieInfo["actor"] && columnIndex === 4){
-        return 'color: #EA1B29';
-      }
-      else if(row["mainActor"] === movieInfo["mainActor"] && columnIndex === 5){
-        return 'color: #EA1B29';
-      }
-      else if(row["movieReleaseDate"] === movieInfo["movieReleaseDate"] && columnIndex === 7){
-        return 'color: #EA1B29';
-      }      
     }
   },
   created(){
@@ -399,7 +452,13 @@ export default {
   },
   watch:{
     currentPage(val,oldVal){
-      this.getData(val-1,this.pageSize)
+      if(this.currentName === "模糊搜索"){
+        this.getData(val-1,this.pageSize,this.searchingTitle)
+      }else{
+        this.getData(val-1,this.pageSize)
+      }
+      
+
     }
     
   },
