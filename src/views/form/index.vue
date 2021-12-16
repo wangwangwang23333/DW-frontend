@@ -295,19 +295,17 @@ export default {
       // 绘制图表
       myChart.setOption(option);
       console.log("初始化点击事件")
-      myChart.on("click",function(){
-        console.log("ok")
+
+      myChart.on('click',param=>{
+        console.log(param)
+        if(this.currentPage == 1){
+          this.getData(this.currentPage - 1,this.pageSize)
+        }
+        else{
+          this.currentPage = 1
+        }
+        this.currentName = param.data["name"]  
       })
-      // myChart.on('click',param=>{
-      //   console.log(param)
-      //   if(this.currentPage == 1){
-      //     this.getData(this.currentPage - 1,this.pageSize)
-      //   }
-      //   else{
-      //     this.currentPage = 1
-      //   }
-      //   this.currentName = param.data["name"]  
-      // })
     },
     getData(currentPage,pageSize){
       
