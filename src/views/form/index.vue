@@ -88,7 +88,7 @@ export default {
      var axios = require('axios');
      var config = {
       method: 'get',
-      url: 'http://localhost:8080/traceability/comment',
+      url: 'http://121.5.140.125:8080/traceability/comment',
       params:{'currentPage':currentPage, 'pageSize':pageSize},
       headers: { }
      };
@@ -105,7 +105,7 @@ export default {
       var axios = require('axios');
       var config = {
         method: 'get',
-        url: 'http://localhost:8080/traceability/movieTvAsin',
+        url: 'http://121.5.140.125:8080/traceability/movieTvAsin',
         params:{'currentPage':currentPage, 'pageSize':pageSize},
         headers: { }
       };
@@ -122,7 +122,7 @@ export default {
       var axios = require('axios');
       var config = {
         method: 'get',
-        url: 'http://localhost:8080/traceability/missingAsin',
+        url: 'http://121.5.140.125:8080/traceability/missingAsin',
         params:{'currentPage':currentPage, 'pageSize':pageSize},
         headers: { }
       };
@@ -139,7 +139,7 @@ export default {
       var axios = require('axios');
       var config = {
         method: 'get',
-        url: 'http://localhost:8080/traceability/movie',
+        url: 'http://121.5.140.125:8080/traceability/movie',
         params:{'currentPage':currentPage, 'pageSize':pageSize},
         headers: { }
       };
@@ -157,7 +157,7 @@ export default {
       var axios = require('axios');
       var config = {
         method: 'get',
-        url: 'http://localhost:8080/traceability/consolidationMovie/conflict',
+        url: 'http://121.5.140.125:8080/traceability/consolidationMovie/conflict',
         params:{'currentPage':currentPage, 'pageSize':pageSize},
         headers: { }
       };
@@ -174,7 +174,7 @@ export default {
       var axios = require('axios');
       var config = {
         method: 'get',
-        url: 'http://localhost:8080/traceability/consolidationMovie/no-conflict',
+        url: 'http://121.5.140.125:8080/traceability/consolidationMovie/no-conflict',
         params:{'currentPage':currentPage, 'pageSize':pageSize},
         headers: { }
       };
@@ -191,7 +191,7 @@ export default {
       var axios = require('axios');
       var config = {
         method: 'get',
-        url: 'http://localhost:8080/traceability/tvAsin',
+        url: 'http://121.5.140.125:8080/traceability/tvAsin',
         params:{'currentPage':currentPage, 'pageSize':pageSize},
         headers: { }
       };
@@ -208,7 +208,7 @@ export default {
       var axios = require('axios');
       var config = {
         method: 'get',
-        url: 'http://localhost:8080/traceability/totalCount',
+        url: 'http://121.5.140.125:8080/traceability/totalCount',
         headers: { }
       };
       axios(config).then(response=>{
@@ -224,7 +224,7 @@ export default {
       var axios = require('axios');
       var config = {
       method: 'get',
-      url: 'http://localhost:8080/traceability/searchingMovie',
+      url: 'http://121.5.140.125:8080/traceability/searchingMovie',
       params:{'title':title, 'currentPage':currentPage, 'pageSize':pageSize},
       headers: { }
       };
@@ -332,7 +332,6 @@ export default {
         else{
           this.currentPage = 1
         }
- 
       })
     },
     getData(currentPage,pageSize,title){
@@ -389,7 +388,7 @@ export default {
         var axios = require('axios');
         var config = {
           method: 'get',
-          url: 'http://localhost:8080/traceability/conflictInfo',
+          url: 'http://121.5.140.125:8080/traceability/conflictInfo',
           params:{"asin":row["asin"]},
           headers: { }
         };
