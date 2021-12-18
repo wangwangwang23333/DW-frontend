@@ -1,6 +1,8 @@
 <template>
   <div class="app-container">
-    <div id="myChart" style="width: 95vw;height: 50vh;"></div>
+    <div id="myChart" style="width: 95vw;height: 50vh;"
+    v-loading="initialLoading"
+    ></div>
     <el-divider></el-divider>
     <el-input
     size="medium" placeholder="输入电影名称进行查询" suffix-icon="el-icon-edit" v-model="searchingTitle"
@@ -66,6 +68,7 @@ export default {
       tableData: [],
 
       loading : false,
+      initialLoading:true,
 
       totalPage: 0,
       pageSize: 6,
@@ -215,7 +218,7 @@ export default {
         
         this.dataCount = response.data 
         this.createChart()
-
+        this.initialLoading=false;
       }).catch(function (error) {
         console.log(error);
       });
