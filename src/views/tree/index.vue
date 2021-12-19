@@ -38,10 +38,10 @@
       <el-col :span="12">
         <el-form>
           <el-form-item>
-            <el-button @click="mostCooperateActorsButton">合作次数最多的演员</el-button>
+            <el-button round @click="mostCooperateActorsButton">合作次数最多的演员</el-button>
           </el-form-item>
           <el-form-item>
-            <el-button @click="mostCooperateActorAndDirectorButton">合作次数最多的演员和导演</el-button>
+            <el-button round @click="mostCooperateActorAndDirectorButton">合作次数最多的演员和导演</el-button>
           </el-form-item>
         </el-form>
       </el-col>
