@@ -567,6 +567,7 @@ export default {
       activeName: 'first',
       searchText:'暂无查询',
       BASE_URL:'http://localhost:8101',
+      HIVE_BASE_URL:'http://localhost:8102',
       movieData:[],
 
       categoryLoading:false,
@@ -898,6 +899,7 @@ export default {
       };
       this.movieLoading=true;
 
+
       // 向mysql发送请求，填入请求时间即可
       axios({
         method: 'post',
@@ -906,6 +908,16 @@ export default {
         headers: { }
       }).then(response=>{
         this.chartData.rows[0].speed = response.data.time
+      })
+
+      // 向hive发送请求
+      axios({
+        method:'post',
+        url: this.HIVE_BASE_URL+'/hive/movie/result',
+        data:searchCondition,
+        headers: { }
+      }).then(response=>{
+        this.chartData.rows[1].speed = response.data.time
       })
 
       // 向neo4j 发送请求
