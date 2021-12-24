@@ -302,7 +302,8 @@
           <!-- <el-tab-pane label="数据血缘" name="second">
             配置管理
           </el-tab-pane> -->
-          <el-tab-pane label="速度对比" name="third" :disabled="!hasResult">
+          <el-tab-pane label="速度对比" name="third" 
+          :disabled="!graphReady ||  !distributeReady || !relationReady">
 
             <ve-histogram
               class="myve"
@@ -597,6 +598,10 @@ export default {
       categoryLoading:false,
       movieCategory:[],
       movieNumber:0,
+
+      relationReady:false,
+      distributeReady:false,
+      graphReady:false,
       }
   },
   created() {
@@ -823,6 +828,9 @@ export default {
       // 清空上一轮查询结果
       this.clearResult();
 
+      // 跳转到查询结果界面
+      this.activeName='first'
+
       Date.prototype.format = function(format)
         {
         var o = {
@@ -922,7 +930,9 @@ export default {
       this.searchText=searchText
       this.vchartsConfig.extend.title.subtext=searchText
 
-
+      this.relationReady=false
+      this.distributeReady=false
+      this.graphReady=false
 
       // 发送api
       var axios = require('axios');
@@ -944,6 +954,7 @@ export default {
         headers: { }
       }).then(response=>{
         this.chartData.rows[0].speed = response.data.time
+        this.relationReady=true
       })
 
       // 向hive发送请求
@@ -954,12 +965,14 @@ export default {
         headers: { }
       }).then(response=>{
         this.chartData.rows[1].speed = response.data.time
+        this.distributeReady=true
       })
 
       // 向neo4j 发送请求
       axios(config)
       .then(response=> {
         this.chartData.rows[2].speed=response.data.time
+        this.graphReady=true
         console.log(response.data)
         let movieList=response.data.movies
         this.movieNumber = response.data.movieNum
