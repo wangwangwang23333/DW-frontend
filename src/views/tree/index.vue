@@ -54,7 +54,8 @@
             {{ searchResult }}
 
           </el-tab-pane>
-          <el-tab-pane label="速度对比" name="third" :disabled="!hasResult">
+          <el-tab-pane label="速度对比" name="third" 
+          :disabled="!graphReady ||  !distributeReady || !relationReady">
 
             <ve-histogram
               class="myve"
@@ -97,6 +98,7 @@
 import Vis from 'vis'
 
 const BASE_URL = 'http://localhost:8101'
+const HIVE_BASE_URL = 'http://localhost:8102'
 
 export default {
 
@@ -369,7 +371,11 @@ export default {
         background: '#7574eb',
         highlight: '#b9b8f5',
         hover: '#b9b8f5'
-      }
+      },
+
+      relationReady:false,
+      distributeReady:false,
+      graphReady:false,
     }
   },
   watch: {
@@ -386,7 +392,8 @@ export default {
 
   methods: {
     viewOriginWeb() {
-
+      //跳转网页
+      window.open("https:www.amazon.com/dp/"+this.dialogData.asin);
     },
 
     handleClick(tab, event) {
@@ -401,6 +408,10 @@ export default {
     mostCooperateActorAndDirectorButton() {
       this.initializeOptions()
 
+      this.relationReady=false
+      this.distributeReady=false
+      this.graphReady=false
+
       var axios = require('axios')
       this.loading = true
       var config = {
@@ -410,21 +421,24 @@ export default {
       }
       this.vchartsConfig.extend.title.text="演员和导演之间的合作关系检索结果"
       this.hasResult = true
+      //分布式数据库查询
+      axios({
+          method: 'get',
+          url: HIVE_BASE_URL + '/hive/actor/director/cooperation',
+          headers: {}
+        }).then(response=>{
+          this.chartData.rows[1].speed = response.data.time
+          //this.vchartsConfig.extend.title.text="演员和导演之间的合作关系检索结果"
+          this.distributeReady=true
+        })
       // neo4j 查询
       axios(config)
         .then(response => {
           console.log(response.data)
           this.chartData.rows[2].speed = response.data.time
           this.searchResult = "名为"+response.data.actor+"的演员和名为"+response.data.director+"的导演,"+"共合作"+response.data.number+"次."
-          axios({
-            method: 'get',
-            url: BASE_URL + '/mysql/association/actor/director/cooperation',
-            headers: {}
-          }).then(response=>{
-            this.chartData.rows[0].speed = response.data.time
-            this.vchartsConfig.extend.title.text="演员和导演之间的合作关系检索结果"
-          })
-
+          
+          this.graphReady=true
           // 将返回值添加成两个结点
           let newNode = {
             id: 0,
@@ -487,6 +501,17 @@ export default {
         .catch(function(error) {
           console.log(error)
         })
+      
+        // mysql查询
+        axios({
+            method: 'get',
+            url: BASE_URL + '/mysql/association/actor/director/cooperation',
+            headers: {}
+          }).then(response=>{
+            this.chartData.rows[0].speed = response.data.time
+            this.relationReady=true
+            
+          })
     },
 
     mostCooperateActorsButton() {
@@ -519,14 +544,7 @@ export default {
           this.hasResult = true
           //防止查询速度结果
           this.chartData.rows[2].speed = response.data.time
-          axios({
-            method: 'get',
-            url: BASE_URL + '/mysql/association/actor/cooperation',
-            headers: {}
-          }).then(response=>{
-            this.chartData.rows[0].speed = response.data.time
-            this.vchartsConfig.extend.title.text="演员之间的合作关系检索结果"
-          })
+         
           // 根据两个演员获取它们出演过的电影
           axios({
             method: 'get',
@@ -570,6 +588,28 @@ export default {
         .catch(function(error) {
           console.log(error)
         })
+      
+      // mysql 查询
+      axios({
+          method: 'get',
+          url: BASE_URL + '/mysql/association/actor/cooperation',
+          headers: {}
+        }).then(response=>{
+          this.chartData.rows[0].speed = response.data.time
+          //this.vchartsConfig.extend.title.text="演员之间的合作关系检索结果"
+          this.relationReady=true
+        })
+
+        // 分布式数据库查询
+        axios({
+          method: 'get',
+          url: HIVE_BASE_URL + '/hive/actor/cooperation',
+          headers: {}
+        }).then(response=>{
+          this.chartData.rows[1].speed = response.data.time
+          //this.vchartsConfig.extend.title.text="演员之间的合作关系检索结果"
+          this.distributeReady=true
+        }) 
     },
 
     initializeOptions() {
